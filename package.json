@@ -1,0 +1,44 @@
+{
+  "name": "meld-electron",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "(Poor mans) recreation of Meld as electron app",
+  "main": "main/main.js",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "build": "node scripts/build.mjs && electron-builder",
+    "build:win": "node scripts/build.mjs && electron-builder --win",
+    "build:mac": "node scripts/build.mjs && electron-builder --mac",
+    "build:linux": "node scripts/build.mjs && electron-builder --linux",
+    "lint": "eslint . --ext .vue,.mjs,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+    "format": "prettier --write src/"
+  },
+  "author": {
+    "name": "Christoph Brill"
+  },
+  "dependencies": {
+    "@types/diff": "^5.2.2",
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
+    "bootstrap-vue-next": "^0.24.0",
+    "diff": "^5.2.0",
+    "mount-vue-component": "^0.10.2",
+    "vue": "^3.3.8"
+  },
+  "devDependencies": {
+    "@iconify-json/bi": "^1.2.0",
+    "@iconify-json/mdi": "^1.2.0",
+    "@vitejs/plugin-vue": "^4.4.1",
+    "@vue/compiler-sfc": "^3.5.3",
+    "chokidar": "^3.5.3",
+    "electron": "^27.1.0",
+    "electron-builder": "^24.2.1",
+    "eslint": "^9.9.0",
+    "eslint-plugin-vue": "^9.27.0",
+    "typescript": "^5.2.2",
+    "unplugin-icons": "^0.19.3",
+    "unplugin-vue-components": "^0.27.4",
+    "vite": "^4.5.0"
+  }
+}
