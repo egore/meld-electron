@@ -11,6 +11,7 @@ const props = defineProps<{
 
 const leftDirectory = ref(props.left || '')
 const rightDirectory = ref(props.right || '')
+const skipIdentical = ref(true)
 
 async function selectLeft() {
   selectDirectory(leftDirectory)
@@ -61,9 +62,11 @@ async function selectDirectory(directory: Ref<string, string>) {
         showFileDiff(left, right)
       }
     "
+    :skip-identical="skipIdentical"
     v-if="leftDirectory && rightDirectory"
     :left="leftDirectory"
     :right="rightDirectory"
-    :key="leftDirectory + rightDirectory"
+    :key="leftDirectory + rightDirectory + skipIdentical"
   />
+  <BFormCheckbox v-model="skipIdentical"> Skip identical files </BFormCheckbox>
 </template>

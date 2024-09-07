@@ -10,6 +10,7 @@ function join(...elements: string[]): string {
 const props = defineProps<{
   left: string
   right: string
+  skipIdentical: boolean
   showFileDiff: (left: string, right: string) => void
 }>()
 
@@ -30,7 +31,13 @@ async function init() {
     for (; j < filesRight.value.length; j++) {
       const rightFile = filesRight.value[j]
       if (leftFile.name === rightFile.name) {
-        pairs.value.push({ left: leftFile, right: rightFile })
+        if (
+          leftFile.type !== 'file' ||
+          !props.skipIdentical ||
+          leftFile.sha1sum !== rightFile.sha1sum
+        ) {
+          pairs.value.push({ left: leftFile, right: rightFile })
+        }
         j++
         break
       } else if (leftFile.name < rightFile.name) {
@@ -66,7 +73,6 @@ init()
 </script>
 
 <template>
-  x
   <div class="row" v-for="pair in pairs">
     <div class="col-sm-6">
       <div class="row" :style="{ color: getColor(pair.left, pair.right) }">

@@ -10,6 +10,7 @@ declare module 'vue' {
     BButton: typeof import('bootstrap-vue-next')['BButton']
     BCard: typeof import('bootstrap-vue-next')['BCard']
     BCardText: typeof import('bootstrap-vue-next')['BCardText']
+    BFormCheckbox: typeof import('bootstrap-vue-next')['BFormCheckbox']
     BInput: typeof import('bootstrap-vue-next')['BInput']
     BInputGroup: typeof import('bootstrap-vue-next')['BInputGroup']
     BNav: typeof import('bootstrap-vue-next')['BNav']
