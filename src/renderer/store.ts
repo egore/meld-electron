@@ -55,6 +55,10 @@ export const appState = createGlobalState(() => {
               '*.{jxl,jpg,jpeg,gif,png,avif,webp,heif,heic,bmp,tif,tiff,raw,dng,cr2,wav,wave,mp3,ogg,oga,vorbis,spx,opus,flac,ac3,aac,aif,aiff,aifc,alac,m4a,3gp,wma,aup,aup3,avi,mov,mpg,mpeg,mp4,m4v,webm,ogv,flv,xcf,xpm,ora,kra,psd,psp}'
             ],
             enabled: false
+          },
+          Development: {
+            pattern: ['node_modules', 'target'],
+            enabled: true
           }
         }
       },
