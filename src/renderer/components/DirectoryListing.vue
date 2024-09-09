@@ -13,6 +13,7 @@ const props = defineProps<{
   skipIdentical: boolean
   ignorePatterns?: RegExp[]
   showFileDiff: (left: string, right: string) => void
+  showDirectoryDiff: (left: string, right: string) => void
 }>()
 
 const filesLeft = ref([] as FileInfo[])
@@ -98,6 +99,13 @@ init()
             @click="showFileDiff(join(left, pair.left.name), join(right, pair.right.name))"
             style="cursor: pointer"
             v-if="pair.left.type === 'file' && pair.right.type === 'file'"
+          >
+            {{ pair.left.name }}
+          </span>
+          <span
+            @click="showDirectoryDiff(join(left, pair.left.name), join(right, pair.right.name))"
+            style="cursor: pointer"
+            v-else-if="pair.left.type === 'dir' && pair.right.type === 'dir'"
           >
             {{ pair.left.name }}
           </span>

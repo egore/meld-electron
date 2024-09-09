@@ -169,6 +169,11 @@ const state = appState()
             startFileComparison(left, right)
           }
         "
+        :show-directory-diff="
+          (left, right) => {
+            startDirectoryComparison(left, right)
+          }
+        "
         :directories-selected="
           (left, right) => {
             element.left = left

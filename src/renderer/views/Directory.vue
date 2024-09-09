@@ -8,6 +8,7 @@ const props = defineProps<{
   right?: string
   directoriesSelected: (left: string, right: string) => void
   showFileDiff: (left: string, right: string) => void
+  showDirectoryDiff: (left: string, right: string) => void
 }>()
 
 const leftDirectory = ref(props.left || '')
@@ -78,6 +79,11 @@ const ignorePatterns = computed(() => {
     :show-file-diff="
       (left, right) => {
         showFileDiff(left, right)
+      }
+    "
+    :show-directory-diff="
+      (left, right) => {
+        showDirectoryDiff(left, right)
       }
     "
     :skip-identical="state.directory.ignoreIdentical"
