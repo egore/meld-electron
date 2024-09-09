@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
+import { format } from 'date-fns'
+
 import { FileInfo } from '../typings/electron'
 import FileSize from '../components/FileSize.vue'
 
@@ -40,6 +42,8 @@ async function init() {
   filesLeft.value.sort()
   filesRight.value = await window.electronAPI.listDirectory(props.right)
   filesRight.value.sort()
+
+  pairs.value = []
 
   let j = 0
   for (const element of filesLeft.value) {
@@ -91,6 +95,16 @@ function getStyle(fileA: FileInfo, fileB: FileInfo, isLeft: boolean) {
   return {}
 }
 
+function copyFile(sourcePath: string, destPath: string) {
+  window.electronAPI.copyFile(sourcePath, destPath)
+  init()
+}
+
+function deleteFile(filePath: string) {
+  window.electronAPI.deleteFile(filePath)
+  init()
+}
+
 init()
 </script>
 
@@ -102,7 +116,7 @@ init()
           <IBiFileEarmark v-if="pair.left.type === 'file'" />
           <IBiFolderFill v-if="pair.left.type === 'directory'" />
         </span>
-        <span class="col-sm-8">
+        <span class="col-sm-6">
           <span
             @click="showFileDiff(join(left, pair.left.name), join(right, pair.right.name))"
             style="cursor: pointer"
@@ -117,11 +131,30 @@ init()
           >
             {{ pair.left.name }}
           </span>
-          <span v-else>
+          <span v-else-if="pair.left.type !== 'file'">
             {{ pair.left.name }}
           </span>
+          <span v-else>
+            <BPopover :click="true" :close-on-hide="true" :delay="{ show: 0, hide: 0 }">
+              <template #target>
+                <BButton variant="link" style="padding: 0; color: inherit; text-decoration: none">{{
+                  pair.left.name
+                }}</BButton>
+              </template>
+              <BButton
+                variant="success"
+                size="sm"
+                class="ml-2"
+                @click="copyFile(join(left, pair.left.name), join(right, pair.right.name))"
+                >Copy</BButton
+              >
+            </BPopover>
+          </span>
         </span>
-        <span class="col-sm-3"><FileSize :size="pair.left.size"></FileSize></span>
+        <span class="col-sm-3">{{
+          pair.left.dateModified ? format(pair.left.dateModified, 'Pp') : ''
+        }}</span>
+        <span class="col-sm-2"><FileSize :size="pair.left.size"></FileSize></span>
       </div>
     </div>
     <div class="col-sm-6">
@@ -130,7 +163,7 @@ init()
           <IBiFileEarmark v-if="pair.right.type === 'file'" />
           <IBiFolderFill v-if="pair.right.type === 'directory'" />
         </span>
-        <span class="col-sm-8">
+        <span class="col-sm-6">
           <span
             @click="() => showFileDiff(join(left, pair.left.name), join(right, pair.right.name))"
             style="cursor: pointer"
@@ -138,11 +171,30 @@ init()
           >
             {{ pair.right.name }}
           </span>
-          <span v-else>
+          <span v-else-if="pair.right.type !== 'file'">
             {{ pair.right.name }}
           </span>
+          <span v-else>
+            <BPopover :click="true" :close-on-hide="true" :delay="{ show: 0, hide: 0 }">
+              <template #target>
+                <BButton variant="link" style="padding: 0; color: inherit; text-decoration: none">{{
+                  pair.right.name
+                }}</BButton>
+              </template>
+              <BButton
+                variant="danger"
+                size="sm"
+                class="ml-2"
+                @click="deleteFile(join(right, pair.right.name))"
+                >Delete</BButton
+              >
+            </BPopover>
+          </span>
         </span>
-        <span class="col-sm-3"><FileSize :size="pair.right.size"></FileSize></span>
+        <span class="col-sm-3">{{
+          pair.right.dateModified ? format(pair.right.dateModified, 'Pp') : ''
+        }}</span>
+        <span class="col-sm-2"><FileSize :size="pair.right.size"></FileSize></span>
       </div>
     </div>
   </div>

@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, session, dialog, nativeImage } from 'electron'
 import { join } from 'path'
-import { readFileSync, readdirSync, statSync } from 'fs'
+import { readFileSync, readdirSync, statSync, copyFileSync, rmSync } from 'fs'
 import { FileInfo } from '../renderer/typings/electron'
 import { ComparisonType } from '../renderer/store'
 import { createHash } from 'crypto'
@@ -52,7 +52,8 @@ app.whenReady().then(() => {
         name: file,
         size: stats.size,
         sha1sum: sha1sum,
-        type: type
+        type: type,
+        dateModified: stats.mtime
       })
     }
     return files
@@ -72,6 +73,23 @@ app.whenReady().then(() => {
       properties: ['openDirectory']
     })
     return result.filePaths[0]
+  })
+
+  ipcMain.handle('copyFile', (event, sourcePath: string, destPath: string) => {
+    if (!statSync(sourcePath).isFile()) {
+      return
+    }
+    if (!statSync(destPath).isFile()) {
+      return
+    }
+    copyFileSync(sourcePath, destPath)
+  })
+
+  ipcMain.handle('deleteFile', (event, filePath: string) => {
+    if (!statSync(filePath).isFile()) {
+      return
+    }
+    rmSync(filePath)
   })
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {

@@ -3,7 +3,7 @@ defineProps<{ size: number }>()
 
 // https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
 function formatBytes(bytes: number, decimals = 2) {
-  if (!+bytes) return '0 Bytes'
+  if (!+bytes) return ''
 
   const k = 1024
   const dm = decimals < 0 ? 0 : decimals

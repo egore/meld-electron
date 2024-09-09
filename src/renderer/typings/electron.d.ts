@@ -9,6 +9,8 @@ export default interface ElectronApi {
   listDirectory: (dirPath: string) => Promise<FileInfo[]>
   selectFile: (defaultPath?: string) => Promise<string>
   selectDirectory: (defaultPath?: string) => Promise<string>
+  copyFile: (sourcePath: string, destPath: string) => Promise<void>
+  deleteFile: (filePath: string) => Promise<void>
 }
 
 export class FileInfo {
@@ -16,6 +18,7 @@ export class FileInfo {
   size: number
   sha1sum: string
   type: ComparisonType | 'dummy'
+  dateModified: Date
 }
 
 declare global {
