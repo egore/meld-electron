@@ -1,5 +1,7 @@
 import { createGlobalState, useStorage } from '@vueuse/core'
 
+export type ComparisonType = 'directory' | 'file'
+
 export const appState = createGlobalState(() => {
   return useStorage(
     'state',

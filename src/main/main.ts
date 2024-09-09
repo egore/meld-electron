@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, session, dialog, nativeImage } from 'elect
 import { join } from 'path'
 import { readFileSync, readdirSync, statSync } from 'fs'
 import { FileInfo } from '../renderer/typings/electron'
+import { ComparisonType } from '../renderer/store'
 import { createHash } from 'crypto'
 
 function createWindow() {
@@ -40,9 +41,9 @@ app.whenReady().then(() => {
     for (const file of content) {
       const filePath = join(dirPath, file)
       const stats = statSync(filePath)
-      const type = stats.isDirectory() ? 'dir' : 'file'
+      const type: ComparisonType = stats.isDirectory() ? 'directory' : 'file'
       let sha1sum = ''
-      if (type !== 'dir') {
+      if (type !== 'directory') {
         const hash = createHash('sha1')
         hash.update(readFileSync(filePath))
         sha1sum = hash.digest('hex')

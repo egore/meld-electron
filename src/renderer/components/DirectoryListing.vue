@@ -92,7 +92,7 @@ init()
       <div class="row" :style="{ color: getColor(pair.left, pair.right) }">
         <span class="col-sm-1">
           <IBiFileEarmark v-if="pair.left.type === 'file'" />
-          <IBiFolderFill v-if="pair.left.type === 'dir'" />
+          <IBiFolderFill v-if="pair.left.type === 'directory'" />
         </span>
         <span class="col-sm-8">
           <span
@@ -105,7 +105,7 @@ init()
           <span
             @click="showDirectoryDiff(join(left, pair.left.name), join(right, pair.right.name))"
             style="cursor: pointer"
-            v-else-if="pair.left.type === 'dir' && pair.right.type === 'dir'"
+            v-else-if="pair.left.type === 'directory' && pair.right.type === 'directory'"
           >
             {{ pair.left.name }}
           </span>
@@ -120,7 +120,7 @@ init()
       <div class="row" :style="{ color: getColor(pair.right, pair.left) }">
         <span class="col-sm-1">
           <IBiFileEarmark v-if="pair.right.type === 'file'" />
-          <IBiFolderFill v-if="pair.right.type === 'dir'" />
+          <IBiFolderFill v-if="pair.right.type === 'directory'" />
         </span>
         <span class="col-sm-8">
           <span

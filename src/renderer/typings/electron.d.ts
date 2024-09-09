@@ -1,3 +1,5 @@
+import { ComparisonType } from '../store'
+
 /**
  * Should match main/preload.ts for typescript support in renderer
  */
@@ -13,7 +15,7 @@ export class FileInfo {
   name: string
   size: number
   sha1sum: string
-  type: 'dir' | 'file' | 'dummy'
+  type: ComparisonType | 'dummy'
 }
 
 declare global {

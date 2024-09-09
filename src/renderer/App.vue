@@ -4,14 +4,14 @@ import { ref } from 'vue'
 import Home from './views/Home.vue'
 import File from './views/File.vue'
 import Directory from './views/Directory.vue'
-import { appState } from './store'
+import { ComparisonType, HistoryElement, appState } from './store'
 
 window.electronAPI.sendMessage('Meld (Electron) has started')
 
 const activeTab = ref(0)
 
-const tabs = ref([{ type: 'Home', name: 'Home' }] as {
-  type: string
+const tabs = ref([{ type: 'home', name: 'Home' }] as {
+  type: ComparisonType | 'home'
   name: string
   left?: string
   right?: string
@@ -19,7 +19,7 @@ const tabs = ref([{ type: 'Home', name: 'Home' }] as {
 
 function startFileComparison(left?: string, right?: string) {
   tabs.value.push({
-    type: 'File',
+    type: 'file',
     name: 'No files selected',
     left: left,
     right: right
@@ -32,7 +32,7 @@ function startFileComparison(left?: string, right?: string) {
 
 function startDirectoryComparison(left?: string, right?: string) {
   tabs.value.push({
-    type: 'Directory',
+    type: 'directory',
     name: 'No directories selected',
     left: left,
     right: right
@@ -104,13 +104,13 @@ const state = appState()
         @click="switchTab(index)"
         @click.middle="closeTab(index)"
       >
-        <IBiFolderFill v-if="element.type === 'Directory'" />
-        <IBiFileEarmark v-if="element.type === 'File'" />
-        <IBiHouse v-if="element.type === 'Home'" />
+        <IBiFolderFill v-if="element.type === 'directory'" />
+        <IBiFileEarmark v-if="element.type === 'file'" />
+        <IBiHouse v-if="element.type === 'home'" />
         {{ element.name }}
         <BButton
           @click="closeTab(index)"
-          v-if="element.type !== 'Home'"
+          v-if="element.type !== 'home'"
           size="sm"
           style="padding: 0"
         >
@@ -144,12 +144,12 @@ const state = appState()
   <div id="pages">
     <div v-for="(element, index) of tabs">
       <Home
-        v-if="element.type === 'Home' && activeTab === index"
+        v-if="element.type === 'home' && activeTab === index"
         :start-file-comparison="startFileComparison"
         :start-directory-comparison="startDirectoryComparison"
       />
       <File
-        v-if="element.type === 'File' && activeTab === index"
+        v-if="element.type === 'file' && activeTab === index"
         :left="element.left"
         :right="element.right"
         :files-selected="
@@ -161,7 +161,7 @@ const state = appState()
         "
       />
       <Directory
-        v-if="element.type === 'Directory' && activeTab === index"
+        v-if="element.type === 'directory' && activeTab === index"
         :left="element.left"
         :right="element.right"
         :show-file-diff="
