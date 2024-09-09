@@ -62,7 +62,8 @@ export const appState = createGlobalState(() => {
           }
         }
       },
-      history: [] as HistoryElement[]
+      history: [] as HistoryElement[],
+      fontSize: '16px'
     },
     localStorage,
     { mergeDefaults: true }

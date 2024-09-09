@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import Home from './views/Home.vue'
 import File from './views/File.vue'
@@ -89,6 +89,8 @@ switchTab(0)
 const modal = ref(false)
 const state = appState()
 
+const fontSize = computed(() => state.value.fontSize)
+
 function updateHistory(newElement: HistoryElement) {
   for (let i = 0; i < state.value.history.length; i++) {
     const element = state.value.history[i]
@@ -136,23 +138,40 @@ function updateHistory(newElement: HistoryElement) {
     <IBiGearFill />
   </BButton>
   <BModal v-model="modal" title="Settings" ok-only size="xl" scrollable>
+    <BRow style="font-weight: bold">General </BRow>
+    <BFormGroup label-cols="3" label="Font size" label-for="settings_fontSize" class="mb-3">
+      <BFormInput id="settings_fontSize" v-model="state.fontSize" />
+    </BFormGroup>
+    <BRow style="font-weight: bold">Directory </BRow>
     <BFormCheckbox v-model="state.directory.ignoreIdentical"> Ignore identical files</BFormCheckbox>
-    <BTableSimple>
-      <BTbody>
-        <BTr v-for="(filter, key) of state.directory.filenameFilters">
-          <BTh>{{ key }}</BTh>
-          <BTd>
-            <BInput v-model="filter.pattern[index]" v-for="(pattern, index) in filter.pattern" />
-          </BTd>
-          <BTd><BFormCheckbox v-model="filter.enabled">Enabled</BFormCheckbox></BTd>
-        </BTr>
-        <BTr>
-          <BTh><BInput /></BTh>
-          <BTd><BInput /></BTd>
-          <BTd>Enabled</BTd>
-        </BTr>
-      </BTbody>
-    </BTableSimple>
+    <BFormGroup
+      v-for="(filter, key) of state.directory.filenameFilters"
+      label-cols="3"
+      :label="key"
+      class="mb-3"
+    >
+      <div class="row">
+        <div class="col-sm-8">
+          <BInput v-model="filter.pattern[index]" v-for="(pattern, index) in filter.pattern" />
+        </div>
+        <div class="col-sm-4">
+          <BFormCheckbox v-model="filter.enabled">Enabled</BFormCheckbox>
+        </div>
+      </div>
+    </BFormGroup>
+    <BRow>
+      <BCol sm="3"><BInput /></BCol>
+      <BCol sm="9">
+        <div class="row">
+          <div class="col-sm-8">
+            <BInput />
+          </div>
+          <div class="col-sm-4">
+            <BFormCheckbox>Enabled</BFormCheckbox>
+          </div>
+        </div>
+      </BCol>
+    </BRow>
   </BModal>
   <div id="pages">
     <div v-for="(element, index) of tabs">
@@ -207,7 +226,7 @@ function updateHistory(newElement: HistoryElement) {
 
 <style>
 ul.nav {
-  background-color: lightgray;
+  background-color: var(--bs-secondary-bg);
 }
 ul.nav .nav-link {
   background-color: rgba(255, 255, 255, 0.5);
@@ -215,5 +234,11 @@ ul.nav .nav-link {
 }
 ul.nav .nav-link.active {
   background-color: white;
+}
+input.form-control,
+span,
+div,
+button.btn {
+  font-size: v-bind('fontSize');
 }
 </style>
