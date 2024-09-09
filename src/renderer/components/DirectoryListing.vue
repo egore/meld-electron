@@ -21,6 +21,20 @@ const filesRight = ref([] as FileInfo[])
 
 const pairs = ref([] as { left: FileInfo; right: FileInfo }[])
 
+function isSkipped(file: FileInfo) {
+  let skip = false
+  if (props.ignorePatterns) {
+    for (const pattern of props.ignorePatterns) {
+      const match = pattern.exec(file.name)
+      if (match) {
+        skip = true
+        break
+      }
+    }
+  }
+  return skip
+}
+
 async function init() {
   filesLeft.value = await window.electronAPI.listDirectory(props.left)
   filesLeft.value.sort()
@@ -30,27 +44,21 @@ async function init() {
   let j = 0
   for (const element of filesLeft.value) {
     const leftFile = element
+    if (isSkipped(leftFile)) {
+      continue
+    }
     for (; j < filesRight.value.length; j++) {
       const rightFile = filesRight.value[j]
+      if (!isSkipped(rightFile)) {
+        continue
+      }
       if (leftFile.name === rightFile.name) {
         if (
           leftFile.type !== 'file' ||
           !props.skipIdentical ||
           leftFile.sha1sum !== rightFile.sha1sum
         ) {
-          let skip = false
-          if (props.ignorePatterns) {
-            for (const pattern of props.ignorePatterns) {
-              const match = pattern.exec(leftFile.name)
-              if (match) {
-                skip = true
-                break
-              }
-            }
-          }
-          if (!skip) {
-            pairs.value.push({ left: leftFile, right: rightFile })
-          }
+          pairs.value.push({ left: leftFile, right: rightFile })
         }
         j++
         break
