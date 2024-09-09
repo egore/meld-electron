@@ -18,3 +18,9 @@ differences in a folder structure.
 The app is built using Electron. The UI is built using Vue 3 and Bootstrap. For creating diffs
 jsdiff is used. To bridge Electron and Vue, I used [electron-vue-template](https://github.com/Deluze/electron-vue-template/tree/master)
 simply because I found it first before [electron-vite-vue](https://github.com/electron-vite/electron-vite-vue).
+
+## Icon
+
+The icon is a mixture of the [meld icon](https://en.wikipedia.org/wiki/File:Meld_Logo.svg)
+and the [electron logo](https://commons.wikimedia.org/wiki/File:Electron_Software_Framework_Logo.svg).
+Therefore, their individual licenses also apply to src/main/logo.svg.

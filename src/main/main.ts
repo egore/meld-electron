@@ -1,10 +1,11 @@
-import { app, BrowserWindow, ipcMain, session, dialog } from 'electron'
+import { app, BrowserWindow, ipcMain, session, dialog, nativeImage } from 'electron'
 import { join } from 'path'
 import { readFileSync, readdirSync, statSync } from 'fs'
 import { FileInfo } from '../renderer/typings/electron'
 import { createHash } from 'crypto'
 
 function createWindow() {
+  const appIcon = nativeImage.createFromPath('./static/logo.png')
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
@@ -12,7 +13,8 @@ function createWindow() {
       preload: join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true
-    }
+    },
+    icon: appIcon
   })
 
   if (process.env.NODE_ENV === 'development') {
