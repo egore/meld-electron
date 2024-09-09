@@ -11,6 +11,7 @@ const props = defineProps<{
   left: string
   right: string
   skipIdentical: boolean
+  ignorePatterns?: RegExp[]
   showFileDiff: (left: string, right: string) => void
 }>()
 
@@ -36,7 +37,19 @@ async function init() {
           !props.skipIdentical ||
           leftFile.sha1sum !== rightFile.sha1sum
         ) {
-          pairs.value.push({ left: leftFile, right: rightFile })
+          let skip = false
+          if (props.ignorePatterns) {
+            for (const pattern of props.ignorePatterns) {
+              const match = pattern.exec(leftFile.name)
+              if (match) {
+                skip = true
+                break
+              }
+            }
+          }
+          if (!skip) {
+            pairs.value.push({ left: leftFile, right: rightFile })
+          }
         }
         j++
         break

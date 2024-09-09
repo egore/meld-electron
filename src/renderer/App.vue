@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import Home from './views/Home.vue'
 import File from './views/File.vue'
 import Directory from './views/Directory.vue'
+import { appState } from './store'
 
 window.electronAPI.sendMessage('Meld (Electron) has started')
 
@@ -90,25 +91,56 @@ function switchTab(index: number) {
   document.title = 'Meld (Electron) - ' + tabs.value[index].name
 }
 switchTab(0)
+const modal = ref(false)
+const state = appState()
 </script>
 
 <template>
-  <BNav card-header tabs id="tabs">
-    <BNavItem
-      v-for="(element, index) of tabs"
-      :active="activeTab === index"
-      @click="switchTab(index)"
-      @click.middle="closeTab(index)"
-    >
-      <IBiFolderFill v-if="element.type === 'Directory'" />
-      <IBiFileEarmark v-if="element.type === 'File'" />
-      <IBiHouse v-if="element.type === 'Home'" />
-      {{ element.name }}
-      <BButton @click="closeTab(index)" v-if="element.type !== 'Home'" size="sm">
-        <IBiXLg />
-      </BButton>
-    </BNavItem>
-  </BNav>
+  <div class="row">
+    <BNav card-header tabs id="tabs">
+      <BNavItem
+        v-for="(element, index) of tabs"
+        :active="activeTab === index"
+        @click="switchTab(index)"
+        @click.middle="closeTab(index)"
+      >
+        <IBiFolderFill v-if="element.type === 'Directory'" />
+        <IBiFileEarmark v-if="element.type === 'File'" />
+        <IBiHouse v-if="element.type === 'Home'" />
+        {{ element.name }}
+        <BButton
+          @click="closeTab(index)"
+          v-if="element.type !== 'Home'"
+          size="sm"
+          style="padding: 0"
+        >
+          <IBiXLg />
+        </BButton>
+      </BNavItem>
+    </BNav>
+  </div>
+  <BButton style="position: absolute; right: 5px; top: 5px" @click="modal = !modal" size="sm"
+    ><IBiGearFill
+  /></BButton>
+  <BModal v-model="modal" title="Settings" ok-only size="xl" scrollable>
+    <BFormCheckbox v-model="state.directory.ignoreIdentical"> Ignore identical files</BFormCheckbox>
+    <BTableSimple>
+      <BTbody>
+        <BTr v-for="(filter, key) of state.directory.filenameFilters">
+          <BTh>{{ key }}</BTh>
+          <BTd
+            ><BInput v-model="filter.pattern[index]" v-for="(pattern, index) in filter.pattern"
+          /></BTd>
+          <BTd><BFormCheckbox v-model="filter.enabled">Enabled</BFormCheckbox></BTd>
+        </BTr>
+        <BTr>
+          <BTh><BInput /></BTh>
+          <BTd><BInput /></BTd>
+          <BTd>Enabled</BTd>
+        </BTr>
+      </BTbody>
+    </BTableSimple>
+  </BModal>
   <div id="pages">
     <div v-for="(element, index) of tabs">
       <Home

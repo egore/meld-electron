@@ -1,6 +1,7 @@
 <script lang="ts" setup>
-import { ref, Ref } from 'vue'
+import { computed, ref, Ref } from 'vue'
 import DirectoryListing from '../components/DirectoryListing.vue'
+import { appState } from '../store'
 
 const props = defineProps<{
   left?: string
@@ -11,7 +12,6 @@ const props = defineProps<{
 
 const leftDirectory = ref(props.left || '')
 const rightDirectory = ref(props.right || '')
-const skipIdentical = ref(true)
 
 async function selectLeft() {
   selectDirectory(leftDirectory)
@@ -35,6 +35,24 @@ async function selectDirectory(directory: Ref<string, string>) {
 
   props.directoriesSelected(leftDirectory.value, rightDirectory.value)
 }
+
+const state = appState()
+
+function convertShellPatternToRexExp(shell: string): string {
+  return '^' + shell.replace('*', '.*') + '$'
+}
+
+const ignorePatterns = computed(() => {
+  const result = []
+  for (const filter of Object.values(state.value.directory.filenameFilters)) {
+    if (filter.enabled) {
+      for (const pattern of filter.pattern) {
+        result.push(RegExp(convertShellPatternToRexExp(pattern)))
+      }
+    }
+  }
+  return result
+})
 </script>
 
 <template>
@@ -62,11 +80,11 @@ async function selectDirectory(directory: Ref<string, string>) {
         showFileDiff(left, right)
       }
     "
-    :skip-identical="skipIdentical"
+    :skip-identical="state.directory.ignoreIdentical"
     v-if="leftDirectory && rightDirectory"
     :left="leftDirectory"
     :right="rightDirectory"
-    :key="leftDirectory + rightDirectory + skipIdentical"
+    :key="leftDirectory + rightDirectory + state.directory.ignoreIdentical"
+    :ignore-patterns="ignorePatterns"
   />
-  <BFormCheckbox v-model="skipIdentical"> Skip identical files </BFormCheckbox>
 </template>
