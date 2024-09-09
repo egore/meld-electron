@@ -1,5 +1,11 @@
 import { createGlobalState, useStorage } from '@vueuse/core'
 
+export type HistoryElement = {
+  type: ComparisonType
+  left: string
+  right: string
+}
+
 export type ComparisonType = 'directory' | 'file'
 
 export const appState = createGlobalState(() => {
@@ -51,7 +57,8 @@ export const appState = createGlobalState(() => {
             enabled: false
           }
         }
-      }
+      },
+      history: [] as HistoryElement[]
     },
     localStorage,
     { mergeDefaults: true }

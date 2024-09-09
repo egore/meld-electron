@@ -5,6 +5,7 @@ import Home from './views/Home.vue'
 import File from './views/File.vue'
 import Directory from './views/Directory.vue'
 import { ComparisonType, HistoryElement, appState } from './store'
+import { getCommonPathLength } from './pathutil'
 
 window.electronAPI.sendMessage('Meld (Electron) has started')
 
@@ -17,7 +18,7 @@ const tabs = ref([{ type: 'home', name: 'Home' }] as {
   right?: string
 }[])
 
-function startFileComparison(left?: string, right?: string) {
+function startFileComparison(left?: string, right?: string, addToHistory?: boolean) {
   tabs.value.push({
     type: 'file',
     name: 'No files selected',
@@ -28,9 +29,12 @@ function startFileComparison(left?: string, right?: string) {
   if (left || right) {
     updateElementTitle(tabs.value[activeTab.value])
   }
+  if (left && right && addToHistory) {
+    updateHistory({ type: 'file', left: left, right: right })
+  }
 }
 
-function startDirectoryComparison(left?: string, right?: string) {
+function startDirectoryComparison(left?: string, right?: string, addToHistory?: boolean) {
   tabs.value.push({
     type: 'directory',
     name: 'No directories selected',
@@ -40,6 +44,9 @@ function startDirectoryComparison(left?: string, right?: string) {
   activeTab.value = tabs.value.length - 1
   if (left || right) {
     updateElementTitle(tabs.value[activeTab.value])
+  }
+  if (left && right && addToHistory) {
+    updateHistory({ type: 'directory', left: left, right: right })
   }
 }
 
@@ -51,18 +58,6 @@ function closeTab(index: number) {
   if (index === activeTab.value) {
     activeTab.value = activeTab.value - 1
   }
-}
-
-function getCommonPathLength(left: string, right: string): number {
-  let i
-  for (i = 0; i < Math.min(left.lastIndexOf('/') + 1, right.lastIndexOf('/') + 1); i++) {
-    const leftChar = left[i]
-    const rightChar = right[i]
-    if (leftChar !== rightChar) {
-      break
-    }
-  }
-  return i
 }
 
 function updateElementTitle(element: {
@@ -93,6 +88,24 @@ function switchTab(index: number) {
 switchTab(0)
 const modal = ref(false)
 const state = appState()
+
+function updateHistory(newElement: HistoryElement) {
+  for (let i = 0; i < state.value.history.length; i++) {
+    const element = state.value.history[i]
+    if (
+      element.type == newElement.type &&
+      ((element.left == newElement.left && element.right == newElement.right) ||
+        (element.left == newElement.right && element.right == newElement.left))
+    ) {
+      state.value.history.splice(i, 1)
+      break
+    }
+  }
+  state.value.history.push(newElement)
+  while (state.value.history.length > 12) {
+    state.value.history.shift()
+  }
+}
 </script>
 
 <template>
@@ -157,6 +170,9 @@ const state = appState()
             element.left = left
             element.right = right
             updateElementTitle(element)
+            if (left && right) {
+              updateHistory({ type: 'file', left: left, right: right })
+            }
           }
         "
       />
@@ -179,6 +195,9 @@ const state = appState()
             element.left = left
             element.right = right
             updateElementTitle(element)
+            if (left && right) {
+              updateHistory({ type: 'directory', left: left, right: right })
+            }
           }
         "
       />

@@ -24,6 +24,7 @@ declare module 'vue' {
     BTd: typeof import('bootstrap-vue-next')['BTd']
     BTh: typeof import('bootstrap-vue-next')['BTh']
     BTr: typeof import('bootstrap-vue-next')['BTr']
+    IBiArrowLeftRight: typeof import('~icons/bi/arrow-left-right')['default']
     IBiCogs: typeof import('~icons/bi/cogs')['default']
     IBiFileEarmark: typeof import('~icons/bi/file-earmark')['default']
     IBiFileEarmarkPlus: typeof import('~icons/bi/file-earmark-plus')['default']
