@@ -49,7 +49,7 @@ async function init() {
     }
     for (; j < filesRight.value.length; j++) {
       const rightFile = filesRight.value[j]
-      if (!isSkipped(rightFile)) {
+      if (isSkipped(rightFile)) {
         continue
       }
       if (leftFile.name === rightFile.name) {
@@ -78,17 +78,17 @@ async function init() {
   }
 }
 
-function getColor(fileA: FileInfo, fileB: FileInfo): string {
+function getStyle(fileA: FileInfo, fileB: FileInfo, isLeft: boolean) {
   if (fileA.type === 'dummy') {
-    return 'lightgray'
+    return { color: 'lightgray', 'text-decoration': 'line-through' }
   }
   if (fileA.name && fileB.type === 'dummy') {
-    return '#219a32'
+    return { color: isLeft ? '#bf0000' : '#219a32' }
   }
   if (fileB.name && fileA.sha1sum !== fileB.sha1sum) {
-    return '#3370e5'
+    return { color: '#3370e5' }
   }
-  return 'inherit'
+  return {}
 }
 
 init()
@@ -97,7 +97,7 @@ init()
 <template>
   <div class="row" v-for="pair in pairs">
     <div class="col-sm-6">
-      <div class="row" :style="{ color: getColor(pair.left, pair.right) }">
+      <div class="row" :style="getStyle(pair.left, pair.right, true)">
         <span class="col-sm-1">
           <IBiFileEarmark v-if="pair.left.type === 'file'" />
           <IBiFolderFill v-if="pair.left.type === 'directory'" />
@@ -125,7 +125,7 @@ init()
       </div>
     </div>
     <div class="col-sm-6">
-      <div class="row" :style="{ color: getColor(pair.right, pair.left) }">
+      <div class="row" :style="getStyle(pair.right, pair.left, false)">
         <span class="col-sm-1">
           <IBiFileEarmark v-if="pair.right.type === 'file'" />
           <IBiFolderFill v-if="pair.right.type === 'directory'" />
