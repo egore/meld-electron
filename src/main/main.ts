@@ -7,8 +7,8 @@ import { createHash } from 'crypto'
 function createWindow() {
   const appIcon = nativeImage.createFromPath('./static/logo.png')
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1024,
+    height: 768,
     webPreferences: {
       preload: join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -39,11 +39,11 @@ app.whenReady().then(() => {
     const files = [] as FileInfo[]
     for (const file of content) {
       const filePath = join(dirPath, file)
-      var stats = statSync(filePath)
+      const stats = statSync(filePath)
       const type = stats.isDirectory() ? 'dir' : 'file'
       let sha1sum = ''
       if (type !== 'dir') {
-        var hash = createHash('sha1')
+        const hash = createHash('sha1')
         hash.update(readFileSync(filePath))
         sha1sum = hash.digest('hex')
       }
@@ -82,11 +82,13 @@ app.whenReady().then(() => {
     })
   })
 
-  app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow()
-    }
-  })
+  createWindow()
+})
+
+app.on('activate', function () {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow()
+  }
 })
 
 app.on('window-all-closed', function () {

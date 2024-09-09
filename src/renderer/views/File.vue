@@ -45,7 +45,7 @@ async function selectFile(filename: Ref<string, string>) {
   <div class="row">
     <div class="col-sm-6 p-0">
       <BInputGroup>
-        <BInput disabled :model-value="leftFilename"></BInput>
+        <BInput disabled :model-value="leftFilename" placeholder="Please select left file"></BInput>
         <template #append>
           <BButton variant="outline-secondary" @click="selectLeft">...</BButton>
         </template>
@@ -53,7 +53,11 @@ async function selectFile(filename: Ref<string, string>) {
     </div>
     <div class="col-sm-6 p-0">
       <BInputGroup>
-        <BInput disabled :model-value="rightFilename"></BInput>
+        <BInput
+          disabled
+          :model-value="rightFilename"
+          placeholder="Please select right file"
+        ></BInput>
         <template #append>
           <BButton variant="outline-secondary" @click="selectRight">...</BButton>
         </template>

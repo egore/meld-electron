@@ -60,7 +60,11 @@ const ignorePatterns = computed(() => {
   <div class="row">
     <div class="col-sm-6 p-0">
       <BInputGroup>
-        <BInput disabled :model-value="leftDirectory"></BInput>
+        <BInput
+          disabled
+          :model-value="leftDirectory"
+          placeholder="Please select left directory"
+        ></BInput>
         <template #append>
           <BButton variant="outline-secondary" @click="selectLeft">...</BButton>
         </template>
@@ -68,7 +72,11 @@ const ignorePatterns = computed(() => {
     </div>
     <div class="col-sm-6 p-0">
       <BInputGroup>
-        <BInput disabled :model-value="rightDirectory"></BInput>
+        <BInput
+          disabled
+          :model-value="rightDirectory"
+          placeholder="Please select right directory"
+        ></BInput>
         <template #append>
           <BButton variant="outline-secondary" @click="selectRight">...</BButton>
         </template>

@@ -119,18 +119,18 @@ const state = appState()
       </BNavItem>
     </BNav>
   </div>
-  <BButton style="position: absolute; right: 5px; top: 5px" @click="modal = !modal" size="sm"
-    ><IBiGearFill
-  /></BButton>
+  <BButton style="position: absolute; right: 5px; top: 5px" @click="modal = !modal" size="sm">
+    <IBiGearFill />
+  </BButton>
   <BModal v-model="modal" title="Settings" ok-only size="xl" scrollable>
     <BFormCheckbox v-model="state.directory.ignoreIdentical"> Ignore identical files</BFormCheckbox>
     <BTableSimple>
       <BTbody>
         <BTr v-for="(filter, key) of state.directory.filenameFilters">
           <BTh>{{ key }}</BTh>
-          <BTd
-            ><BInput v-model="filter.pattern[index]" v-for="(pattern, index) in filter.pattern"
-          /></BTd>
+          <BTd>
+            <BInput v-model="filter.pattern[index]" v-for="(pattern, index) in filter.pattern" />
+          </BTd>
           <BTd><BFormCheckbox v-model="filter.enabled">Enabled</BFormCheckbox></BTd>
         </BTr>
         <BTr>
@@ -185,3 +185,16 @@ const state = appState()
     </div>
   </div>
 </template>
+
+<style>
+ul.nav {
+  background-color: lightgray;
+}
+ul.nav .nav-link {
+  background-color: rgba(255, 255, 255, 0.5);
+  color: black;
+}
+ul.nav .nav-link.active {
+  background-color: white;
+}
+</style>
