@@ -15,8 +15,8 @@ const leftChunks = ref([] as Change[])
 const rightChunks = ref([] as Change[])
 
 async function init() {
-  const leftText = await globalThis.window.electronAPI.loadFile(leftFile.value)
-  const rightText = await globalThis.window.electronAPI.loadFile(rightFile.value)
+  const leftText = await window.ipcRenderer.invoke('loadFile', leftFile.value)
+  const rightText = await window.ipcRenderer.invoke('loadFile', rightFile.value)
   const chunks_ = diffLines(leftText, rightText)
 
   const left_ = []

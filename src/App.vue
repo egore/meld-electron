@@ -7,7 +7,7 @@ import Directory from './views/Directory.vue'
 import { ComparisonType, HistoryElement, appState } from './store'
 import { getCommonPathLength } from './pathutil'
 
-window.electronAPI.sendMessage('Meld (Electron) has started')
+window.ipcRenderer.send('message', 'Meld (Electron) has started')
 
 const activeTab = ref(0)
 

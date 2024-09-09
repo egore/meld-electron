@@ -21,6 +21,8 @@ declare module 'vue' {
     BNavItem: typeof import('bootstrap-vue-next')['BNavItem']
     BPopover: typeof import('bootstrap-vue-next')['BPopover']
     BRow: typeof import('bootstrap-vue-next')['BRow']
+    DirectoryListing: typeof import('./src/components/DirectoryListing.vue')['default']
+    FileSize: typeof import('./src/components/FileSize.vue')['default']
     IBiArrowLeftRight: typeof import('~icons/bi/arrow-left-right')['default']
     IBiFileEarmark: typeof import('~icons/bi/file-earmark')['default']
     IBiFileEarmarkPlus: typeof import('~icons/bi/file-earmark-plus')['default']
@@ -29,5 +31,7 @@ declare module 'vue' {
     IBiGearFill: typeof import('~icons/bi/gear-fill')['default']
     IBiHouse: typeof import('~icons/bi/house')['default']
     IBiXLg: typeof import('~icons/bi/x-lg')['default']
+    TwoPaneFileDiff: typeof import('./src/components/TwoPaneFileDiff.vue')['default']
+    UnifiedFileDiff: typeof import('./src/components/UnifiedFileDiff.vue')['default']
   }
 }

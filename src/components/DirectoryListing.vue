@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 import { format } from 'date-fns'
 
-import { FileInfo } from '../typings/electron'
 import FileSize from '../components/FileSize.vue'
 
 function join(...elements: string[]): string {
@@ -38,9 +37,9 @@ function isSkipped(file: FileInfo) {
 }
 
 async function init() {
-  filesLeft.value = await window.electronAPI.listDirectory(props.left)
+  filesLeft.value = await window.ipcRenderer.invoke('listDirectory', props.left)
   filesLeft.value.sort()
-  filesRight.value = await window.electronAPI.listDirectory(props.right)
+  filesRight.value = await window.ipcRenderer.invoke('listDirectory', props.right)
   filesRight.value.sort()
 
   pairs.value = []
@@ -96,12 +95,12 @@ function getStyle(fileA: FileInfo, fileB: FileInfo, isLeft: boolean) {
 }
 
 function copyFile(sourcePath: string, destPath: string) {
-  window.electronAPI.copyFile(sourcePath, destPath)
+  window.ipcRenderer.invoke('copyFile', sourcePath, destPath)
   init()
 }
 
 function deleteFile(filePath: string) {
-  window.electronAPI.deleteFile(filePath)
+  window.ipcRenderer.invoke('deleteFile', filePath)
   init()
 }
 
@@ -112,11 +111,11 @@ init()
   <div class="row" v-for="pair in pairs">
     <div class="col-sm-6">
       <div class="row" :style="getStyle(pair.left, pair.right, true)">
-        <span class="col-sm-1">
+        <span class="col-sm-1 oneline" style="width: 36px">
           <IBiFileEarmark v-if="pair.left.type === 'file'" />
           <IBiFolderFill v-if="pair.left.type === 'directory'" />
         </span>
-        <span class="col-sm-6">
+        <span class="col-sm-6 p-0 oneline">
           <span
             @click="showFileDiff(join(left, pair.left.name), join(right, pair.right.name))"
             style="cursor: pointer"
@@ -151,19 +150,19 @@ init()
             </BPopover>
           </span>
         </span>
-        <span class="col-sm-3">{{
+        <span class="col-sm-3 p-0 oneline">{{
           pair.left.dateModified ? format(pair.left.dateModified, 'Pp') : ''
         }}</span>
-        <span class="col-sm-2"><FileSize :size="pair.left.size"></FileSize></span>
+        <span class="col-sm-2 p-0 oneline"><FileSize :size="pair.left.size"></FileSize></span>
       </div>
     </div>
     <div class="col-sm-6">
       <div class="row" :style="getStyle(pair.right, pair.left, false)">
-        <span class="col-sm-1">
+        <span class="col-sm-1 oneline" style="width: 36px">
           <IBiFileEarmark v-if="pair.right.type === 'file'" />
           <IBiFolderFill v-if="pair.right.type === 'directory'" />
         </span>
-        <span class="col-sm-6">
+        <span class="col-sm-6 p-0 oneline">
           <span
             @click="() => showFileDiff(join(left, pair.left.name), join(right, pair.right.name))"
             style="cursor: pointer"
@@ -191,11 +190,18 @@ init()
             </BPopover>
           </span>
         </span>
-        <span class="col-sm-3">{{
+        <span class="col-sm-3 p-0 oneline">{{
           pair.right.dateModified ? format(pair.right.dateModified, 'Pp') : ''
         }}</span>
-        <span class="col-sm-2"><FileSize :size="pair.right.size"></FileSize></span>
+        <span class="col-sm-2 p-0 oneline"><FileSize :size="pair.right.size"></FileSize></span>
       </div>
     </div>
   </div>
 </template>
+
+<style>
+.oneline {
+  white-space: nowrap;
+  overflow: clip;
+}
+</style>

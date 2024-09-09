@@ -28,7 +28,7 @@ async function selectDirectory(directory: Ref<string, string>) {
   if (lastSlash !== -1) {
     dir = directory.value.slice(0, lastSlash)
   }
-  const selectedDirectory = await window.electronAPI.selectDirectory(dir)
+  const selectedDirectory = await window.ipcRenderer.invoke('selectDirectory', dir)
   if (!selectedDirectory) {
     return
   }

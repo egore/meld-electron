@@ -10,8 +10,8 @@ const props = defineProps<{
 const chunks = ref([] as Change[])
 
 async function init() {
-  const leftText = await globalThis.window.electronAPI.loadFile(props.left)
-  const rightText = await globalThis.window.electronAPI.loadFile(props.right)
+  const leftText = await window.ipcRenderer.invoke('loadFile', props.left)
+  const rightText = await window.ipcRenderer.invoke('loadFile', props.right)
   const chunks_ = diffLines(leftText, rightText)
 
   chunks.value = chunks_

@@ -16,8 +16,10 @@ differences in a folder structure.
 ## Technologies used
 
 The app is built using Electron. The UI is built using Vue 3 and Bootstrap. For creating diffs
-jsdiff is used. To bridge Electron and Vue, I used [electron-vue-template](https://github.com/Deluze/electron-vue-template/tree/master)
-simply because I found it first before [electron-vite-vue](https://github.com/electron-vite/electron-vite-vue).
+jsdiff is used. To bridge Electron and Vue, [electron-vite-vue](https://github.com/electron-vite/electron-vite-vue)
+is used. Previously [electron-vue-template](https://github.com/Deluze/electron-vue-template) was used,
+so some remainders of this can linger around in the code. The files that have a relevant code parts
+from this project gained a license header.
 
 ## Icon
 

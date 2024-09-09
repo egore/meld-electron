@@ -28,7 +28,7 @@ async function selectFile(filename: Ref<string, string>) {
   if (lastSlash !== -1) {
     dir = filename.value.slice(0, lastSlash)
   }
-  const selectedFile = await window.electronAPI.selectFile(dir)
+  const selectedFile: string = await window.ipcRenderer.invoke('selectFile', dir)
   if (!selectedFile) {
     return
   }

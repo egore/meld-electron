@@ -27,19 +27,19 @@ const history = computed(() => {
 
 <template>
   <div class="row justify-content-sm-center" style="margin-top: 5rem">
-    <div class="col-sm-4 col-md-3 col-lg-2 h1">
+    <div class="col-sm-4 col-md-3 col-lg-2">
       <BCard tag="article">
         <BCardText style="text-align: center">
-          <IBiFileEarmarkPlus />
+          <IBiFileEarmarkPlus style="font-size: 3rem" />
         </BCardText>
 
         <BButton style="width: 100%" @click="startFileComparison()">New file comparison</BButton>
       </BCard>
     </div>
-    <div class="col-sm-4 col-md-3 col-lg-2 h1">
+    <div class="col-sm-4 col-md-3 col-lg-2">
       <BCard tag="article">
         <BCardText style="text-align: center">
-          <IBiFolderPlus />
+          <IBiFolderPlus style="font-size: 3rem" />
         </BCardText>
 
         <BButton style="width: 100%" @click="startDirectoryComparison()"

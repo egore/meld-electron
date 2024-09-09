@@ -7,10 +7,15 @@ import { createBootstrap } from 'bootstrap-vue-next'
 import './style.css'
 import App from './App.vue'
 
-const app = createApp(App)
+window.ipcRenderer.on('main-process-message', (_event, ...args) => {
+  console.log('[Receive Main-process message]:', ...args)
+})
 
-app.use(createBootstrap())
-
-app.mount('#app')
+createApp(App)
+  .use(createBootstrap())
+  .mount('#app')
+  .$nextTick(() => {
+    postMessage({ payload: 'removeLoading' }, '*')
+  })
 
 import 'bootstrap/dist/js/bootstrap.js'
