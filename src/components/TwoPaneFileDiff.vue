@@ -81,6 +81,16 @@ function prefix(chunk: Change): string {
   }
 }
 
+function onScroll(index: number, origin: 'left' | 'right'): void {
+  const left = document.getElementById(`left-chunk-${index}`) as HTMLElement
+  const right = document.getElementById(`right-chunk-${index}`) as HTMLElement
+  if (origin === 'right') {
+    left.scrollLeft = right.scrollLeft
+  } else {
+    right.scrollLeft = left.scrollLeft
+  }
+}
+
 init()
 </script>
 
@@ -98,7 +108,9 @@ init()
       >
       <pre
         class="m-0"
-        style="overflow: hidden"
+        :id="`left-chunk-${index}`"
+        @scroll="onScroll(index, 'left')"
+        style="overflow-y: scroll"
         :style="{ backgroundColor: getBackgroundColor(item, rightChunks[index]) }"
         >{{ item.value }}</pre
       >
@@ -115,7 +127,9 @@ init()
       >
       <pre
         class="m-0"
-        style="overflow: hidden"
+        :id="`right-chunk-${index}`"
+        @scroll="onScroll(index, 'right')"
+        style="overflow-y: scroll"
         :style="{ backgroundColor: getBackgroundColor(rightChunks[index], item) }"
         >{{ rightChunks[index].value }}</pre
       >
