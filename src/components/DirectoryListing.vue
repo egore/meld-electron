@@ -119,89 +119,20 @@ init()
 
 <template>
   <div class="row" v-for="pair in pairs">
-    <div class="col-sm-6" style="width: calc(50% - 10px)">
-      <div class="row flex-row flex-nowrap" :style="getStyle(pair.left, pair.right, true)">
-        <span class="col-sm-1 oneline" style="width: 36px">
-          <IBiFileEarmark v-if="pair.left.type === 'file'" />
-          <IBiFolderFill v-if="pair.left.type === 'directory'" />
-        </span>
-        <span class="col-sm-6 p-0 oneline">
-          <span
-            @dblclick="showFileDiff(join(left, pair.left.name), join(right, pair.right.name))"
-            style="cursor: pointer"
-            v-if="pair.left.type === 'file' && pair.right.type === 'file'"
-          >
-            {{ pair.left.name }}
-          </span>
-          <span
-            @dblclick="showDirectoryDiff(join(left, pair.left.name), join(right, pair.right.name))"
-            style="cursor: pointer"
-            v-else-if="pair.left.type === 'directory' && pair.right.type === 'directory'"
-          >
-            <BPopover :click="true" :close-on-hide="true" :delay="{ show: 0, hide: 0 }">
-              <template #target>
-                <BButton variant="link" style="padding: 0; color: inherit; text-decoration: none">{{
-                  pair.left.name
-                }}</BButton>
-              </template>
-              <BButton
-                size="sm"
-                class="ml-2"
-                @click="showDirectoryDiff(join(left, pair.left.name), join(right, pair.right.name))"
-                >Show</BButton
-              >
-            </BPopover>
-          </span>
-          <span v-else-if="pair.left.type === 'directory' && pair.right.type === 'dummy'">
-            <BPopover :click="true" :close-on-hide="true" :delay="{ show: 0, hide: 0 }">
-              <template #target>
-                <BButton variant="link" style="padding: 0; color: inherit; text-decoration: none">{{
-                  pair.left.name
-                }}</BButton>
-              </template>
-              <BButton
-                variant="danger"
-                size="sm"
-                class="ml-2"
-                @click="deleteDirectory(join(left, pair.left.name))"
-                >Delete</BButton
-              >
-            </BPopover>
-          </span>
-          <span v-else-if="pair.left.type !== 'file'">
-            {{ pair.left.name }}
-          </span>
-          <span v-else>
-            <BPopover :click="true" :close-on-hide="true" :delay="{ show: 0, hide: 0 }">
-              <template #target>
-                <BButton variant="link" style="padding: 0; color: inherit; text-decoration: none">{{
-                  pair.left.name
-                }}</BButton>
-              </template>
-              <BButton
-                variant="success"
-                size="sm"
-                class="ml-2"
-                @click="copyFile(join(left, pair.left.name), join(right, pair.right.name))"
-                >Copy</BButton
-              >
-              <BButton
-                variant="danger"
-                size="sm"
-                class="ml-2"
-                @click="deleteFile(join(left, pair.left.name))"
-                >Delete</BButton
-              >
-            </BPopover>
-          </span>
-        </span>
-        <span class="col-sm-3 p-0 oneline">{{
-          pair.left.dateModified ? format(pair.left.dateModified, 'Pp') : ''
-        }}</span>
-        <span class="col-sm-2 p-0 oneline"><FileSize :size="pair.left.size"></FileSize></span>
-      </div>
+    <div class="col-sm-6" style="width: calc(50% - 20px)">
+      <DirectoryListingLine
+        position="left"
+        :pair="pair"
+        :dirs="{ left: left, right: right }"
+        :show-file-diff="showFileDiff"
+        :show-directory-diff="showDirectoryDiff"
+        :delete-directory="deleteDirectory"
+        :reload="init"
+        :delete-file="deleteFile"
+        :copy-file="copyFile"
+      />
     </div>
-    <div style="width: 20px; padding: 0">
+    <div style="width: 40px; padding: 0; text-align: center">
       <span
         style="cursor: pointer"
         v-if="pair.left.type === 'file' && pair.right.type === 'dummy'"
@@ -223,88 +154,26 @@ init()
       >
         <IBiArrowLeft />
       </span>
+      <span
+        style="cursor: pointer"
+        v-if="pair.left.type === 'file' && pair.right.type === 'file'"
+        @click="overwriteFile(join(left, pair.left.name), join(right, pair.right.name))"
+      >
+        <IBiArrowRight />
+      </span>
     </div>
-    <div class="col-sm-6" style="width: calc(50% - 10px)">
-      <div class="row flex-row flex-nowrap" :style="getStyle(pair.right, pair.left, false)">
-        <span class="col-sm-1 oneline" style="width: 36px">
-          <IBiFileEarmark v-if="pair.right.type === 'file'" />
-          <IBiFolderFill v-if="pair.right.type === 'directory'" />
-        </span>
-        <span class="col-sm-6 p-0 oneline">
-          <span
-            @dblclick="() => showFileDiff(join(left, pair.left.name), join(right, pair.right.name))"
-            style="cursor: pointer"
-            v-if="pair.left.type === 'file' && pair.right.type === 'file'"
-          >
-            {{ pair.right.name }}
-          </span>
-          <span
-            @dblclick="showDirectoryDiff(join(left, pair.left.name), join(right, pair.right.name))"
-            style="cursor: pointer"
-            v-else-if="pair.left.type === 'directory' && pair.right.type === 'directory'"
-          >
-            <BPopover :click="true" :close-on-hide="true" :delay="{ show: 0, hide: 0 }">
-              <template #target>
-                <BButton variant="link" style="padding: 0; color: inherit; text-decoration: none">{{
-                  pair.right.name
-                }}</BButton>
-              </template>
-              <BButton
-                size="sm"
-                class="ml-2"
-                @click="showDirectoryDiff(join(left, pair.left.name), join(right, pair.right.name))"
-                >Show</BButton
-              >
-            </BPopover>
-          </span>
-          <span v-else-if="pair.left.type === 'dummy' && pair.right.type === 'directory'">
-            <BPopover :click="true" :close-on-hide="true" :delay="{ show: 0, hide: 0 }">
-              <template #target>
-                <BButton variant="link" style="padding: 0; color: inherit; text-decoration: none">{{
-                  pair.right.name
-                }}</BButton>
-              </template>
-              <BButton
-                variant="danger"
-                size="sm"
-                class="ml-2"
-                @click="deleteDirectory(join(right, pair.right.name))"
-                >Delete</BButton
-              >
-            </BPopover>
-          </span>
-          <span v-else-if="pair.right.type !== 'file'">
-            {{ pair.right.name }}
-          </span>
-          <span v-else>
-            <BPopover :click="true" :close-on-hide="true" :delay="{ show: 0, hide: 0 }">
-              <template #target>
-                <BButton variant="link" style="padding: 0; color: inherit; text-decoration: none">{{
-                  pair.right.name
-                }}</BButton>
-              </template>
-              <BButton
-                variant="success"
-                size="sm"
-                class="ml-2"
-                @click="copyFile(join(right, pair.right.name), join(left, pair.left.name))"
-                >Copy</BButton
-              >
-              <BButton
-                variant="danger"
-                size="sm"
-                class="ml-2"
-                @click="deleteFile(join(right, pair.right.name))"
-                >Delete</BButton
-              >
-            </BPopover>
-          </span>
-        </span>
-        <span class="col-sm-3 p-0 oneline">{{
-          pair.right.dateModified ? format(pair.right.dateModified, 'Pp') : ''
-        }}</span>
-        <span class="col-sm-2 p-0 oneline"><FileSize :size="pair.right.size"></FileSize></span>
-      </div>
+    <div class="col-sm-6" style="width: calc(50% - 20px)">
+      <DirectoryListingLine
+        position="right"
+        :pair="pair"
+        :dirs="{ left: left, right: right }"
+        :show-file-diff="showFileDiff"
+        :show-directory-diff="showDirectoryDiff"
+        :delete-directory="deleteDirectory"
+        :reload="init"
+        :delete-file="deleteFile"
+        :copy-file="copyFile"
+      />
     </div>
   </div>
 </template>

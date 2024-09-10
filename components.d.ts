@@ -22,6 +22,7 @@ declare module 'vue' {
     BPopover: typeof import('bootstrap-vue-next')['BPopover']
     BRow: typeof import('bootstrap-vue-next')['BRow']
     DirectoryListing: typeof import('./src/components/DirectoryListing.vue')['default']
+    DirectoryListingLine: typeof import('./src/components/DirectoryListingLine.vue')['default']
     FileSize: typeof import('./src/components/FileSize.vue')['default']
     IBiArrowLeft: typeof import('~icons/bi/arrow-left')['default']
     IBiArrowLeftRight: typeof import('~icons/bi/arrow-left-right')['default']
