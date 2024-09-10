@@ -147,6 +147,13 @@ init()
                 @click="copyFile(join(left, pair.left.name), join(right, pair.right.name))"
                 >Copy</BButton
               >
+              <BButton
+                variant="danger"
+                size="sm"
+                class="ml-2"
+                @click="deleteFile(join(left, pair.left.name))"
+                >Delete</BButton
+              >
             </BPopover>
           </span>
         </span>
@@ -180,6 +187,13 @@ init()
                   pair.right.name
                 }}</BButton>
               </template>
+              <BButton
+                variant="success"
+                size="sm"
+                class="ml-2"
+                @click="copyFile(join(right, pair.right.name), join(left, pair.left.name))"
+                >Copy</BButton
+              >
               <BButton
                 variant="danger"
                 size="sm"
