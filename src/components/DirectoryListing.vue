@@ -99,8 +99,18 @@ async function copyFile(sourcePath: string, destPath: string) {
   init()
 }
 
+async function overwriteFile(sourcePath: string, destPath: string) {
+  await window.ipcRenderer.invoke('copyFile', sourcePath, destPath, true)
+  init()
+}
+
 async function deleteFile(filePath: string) {
   await window.ipcRenderer.invoke('deleteFile', filePath)
+  init()
+}
+
+async function deleteDirectory(filePath: string) {
+  await window.ipcRenderer.invoke('deleteDirectory', filePath)
   init()
 }
 
@@ -109,26 +119,54 @@ init()
 
 <template>
   <div class="row" v-for="pair in pairs">
-    <div class="col-sm-6">
-      <div class="row" :style="getStyle(pair.left, pair.right, true)">
+    <div class="col-sm-6" style="width: calc(50% - 10px)">
+      <div class="row flex-row flex-nowrap" :style="getStyle(pair.left, pair.right, true)">
         <span class="col-sm-1 oneline" style="width: 36px">
           <IBiFileEarmark v-if="pair.left.type === 'file'" />
           <IBiFolderFill v-if="pair.left.type === 'directory'" />
         </span>
         <span class="col-sm-6 p-0 oneline">
           <span
-            @click="showFileDiff(join(left, pair.left.name), join(right, pair.right.name))"
+            @dblclick="showFileDiff(join(left, pair.left.name), join(right, pair.right.name))"
             style="cursor: pointer"
             v-if="pair.left.type === 'file' && pair.right.type === 'file'"
           >
             {{ pair.left.name }}
           </span>
           <span
-            @click="showDirectoryDiff(join(left, pair.left.name), join(right, pair.right.name))"
+            @dblclick="showDirectoryDiff(join(left, pair.left.name), join(right, pair.right.name))"
             style="cursor: pointer"
             v-else-if="pair.left.type === 'directory' && pair.right.type === 'directory'"
           >
-            {{ pair.left.name }}
+            <BPopover :click="true" :close-on-hide="true" :delay="{ show: 0, hide: 0 }">
+              <template #target>
+                <BButton variant="link" style="padding: 0; color: inherit; text-decoration: none">{{
+                  pair.left.name
+                }}</BButton>
+              </template>
+              <BButton
+                size="sm"
+                class="ml-2"
+                @click="showDirectoryDiff(join(left, pair.left.name), join(right, pair.right.name))"
+                >Show</BButton
+              >
+            </BPopover>
+          </span>
+          <span v-else-if="pair.left.type === 'directory' && pair.right.type === 'dummy'">
+            <BPopover :click="true" :close-on-hide="true" :delay="{ show: 0, hide: 0 }">
+              <template #target>
+                <BButton variant="link" style="padding: 0; color: inherit; text-decoration: none">{{
+                  pair.left.name
+                }}</BButton>
+              </template>
+              <BButton
+                variant="danger"
+                size="sm"
+                class="ml-2"
+                @click="deleteDirectory(join(left, pair.left.name))"
+                >Delete</BButton
+              >
+            </BPopover>
           </span>
           <span v-else-if="pair.left.type !== 'file'">
             {{ pair.left.name }}
@@ -163,19 +201,77 @@ init()
         <span class="col-sm-2 p-0 oneline"><FileSize :size="pair.left.size"></FileSize></span>
       </div>
     </div>
-    <div class="col-sm-6">
-      <div class="row" :style="getStyle(pair.right, pair.left, false)">
+    <div style="width: 20px; padding: 0">
+      <span
+        style="cursor: pointer"
+        v-if="pair.left.type === 'file' && pair.right.type === 'dummy'"
+        @click="copyFile(join(left, pair.left.name), join(right, pair.right.name))"
+      >
+        <IBiArrowRight />
+      </span>
+      <span
+        style="cursor: pointer"
+        v-if="pair.left.type === 'dummy' && pair.right.type === 'file'"
+        @click="copyFile(join(right, pair.right.name), join(left, pair.left.name))"
+      >
+        <IBiArrowLeft />
+      </span>
+      <span
+        style="cursor: pointer"
+        v-if="pair.left.type === 'file' && pair.right.type === 'file'"
+        @click="overwriteFile(join(right, pair.right.name), join(left, pair.left.name))"
+      >
+        <IBiArrowLeft />
+      </span>
+    </div>
+    <div class="col-sm-6" style="width: calc(50% - 10px)">
+      <div class="row flex-row flex-nowrap" :style="getStyle(pair.right, pair.left, false)">
         <span class="col-sm-1 oneline" style="width: 36px">
           <IBiFileEarmark v-if="pair.right.type === 'file'" />
           <IBiFolderFill v-if="pair.right.type === 'directory'" />
         </span>
         <span class="col-sm-6 p-0 oneline">
           <span
-            @click="() => showFileDiff(join(left, pair.left.name), join(right, pair.right.name))"
+            @dblclick="() => showFileDiff(join(left, pair.left.name), join(right, pair.right.name))"
             style="cursor: pointer"
             v-if="pair.left.type === 'file' && pair.right.type === 'file'"
           >
             {{ pair.right.name }}
+          </span>
+          <span
+            @dblclick="showDirectoryDiff(join(left, pair.left.name), join(right, pair.right.name))"
+            style="cursor: pointer"
+            v-else-if="pair.left.type === 'directory' && pair.right.type === 'directory'"
+          >
+            <BPopover :click="true" :close-on-hide="true" :delay="{ show: 0, hide: 0 }">
+              <template #target>
+                <BButton variant="link" style="padding: 0; color: inherit; text-decoration: none">{{
+                  pair.right.name
+                }}</BButton>
+              </template>
+              <BButton
+                size="sm"
+                class="ml-2"
+                @click="showDirectoryDiff(join(left, pair.left.name), join(right, pair.right.name))"
+                >Show</BButton
+              >
+            </BPopover>
+          </span>
+          <span v-else-if="pair.left.type === 'dummy' && pair.right.type === 'directory'">
+            <BPopover :click="true" :close-on-hide="true" :delay="{ show: 0, hide: 0 }">
+              <template #target>
+                <BButton variant="link" style="padding: 0; color: inherit; text-decoration: none">{{
+                  pair.right.name
+                }}</BButton>
+              </template>
+              <BButton
+                variant="danger"
+                size="sm"
+                class="ml-2"
+                @click="deleteDirectory(join(right, pair.right.name))"
+                >Delete</BButton
+              >
+            </BPopover>
           </span>
           <span v-else-if="pair.right.type !== 'file'">
             {{ pair.right.name }}

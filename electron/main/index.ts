@@ -190,11 +190,11 @@ ipcMain.handle('selectDirectory', async (event, defaultPath) => {
   return result.filePaths[0]
 })
 
-ipcMain.handle('copyFile', (event, sourcePath: string, destPath: string) => {
+ipcMain.handle('copyFile', (event, sourcePath: string, destPath: string, overwrite?: boolean) => {
   if (!statSync(sourcePath).isFile()) {
     return
   }
-  if (existsSync(destPath)) {
+  if (!overwrite && existsSync(destPath)) {
     return
   }
   copyFileSync(sourcePath, destPath)
@@ -205,4 +205,11 @@ ipcMain.handle('deleteFile', async (event, filePath: string) => {
     return
   }
   await trash(filePath)
+})
+
+ipcMain.handle('deleteDirectory', async (event, dirPath: string) => {
+  if (!statSync(dirPath).isDirectory()) {
+    return
+  }
+  await trash(dirPath)
 })
