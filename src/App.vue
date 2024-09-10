@@ -7,17 +7,36 @@ import Directory from './views/Directory.vue'
 import { ComparisonType, HistoryElement, appState } from './store'
 import { getCommonPathLength } from './pathutil'
 
-window.ipcRenderer.send('message', 'Meld (Electron) has started')
-
-const activeTab = ref(0)
-
-const tabs = ref([{ type: 'home', name: 'Home' }] as {
+// Tab definition for files and directories
+type Tab = {
   type: ComparisonType | 'home'
   name: string
   left?: string
   right?: string
-}[])
+  mtime?: number
+}
 
+// Start with the home tab open by default
+const activeTab = ref(0)
+
+// List of tabs shown by the app
+const tabs = ref([{ type: 'home', name: 'Home' }] as Tab[])
+
+// Add file watcher if a file was given
+function addWatcher(filePath?: string): void {
+  if (filePath) {
+    window.ipcRenderer.invoke('watchFile', filePath)
+  }
+}
+
+// Remove file watcher if a file was given
+function removeWatcher(filePath?: string): void {
+  if (filePath) {
+    window.ipcRenderer.invoke('unwatchFile', filePath)
+  }
+}
+
+// Start a new file comparison, optionally adding it to the history of comparisons
 function startFileComparison(left?: string, right?: string, addToHistory?: boolean) {
   tabs.value.push({
     type: 'file',
@@ -29,11 +48,14 @@ function startFileComparison(left?: string, right?: string, addToHistory?: boole
   if (left || right) {
     updateElementTitle(tabs.value[activeTab.value])
   }
+  addWatcher(left)
+  addWatcher(right)
   if (left && right && addToHistory) {
     updateHistory({ type: 'file', left: left, right: right })
   }
 }
 
+// Start a new directory comparison, optionally adding it to the history of comparisons
 function startDirectoryComparison(left?: string, right?: string, addToHistory?: boolean) {
   tabs.value.push({
     type: 'directory',
@@ -50,9 +72,14 @@ function startDirectoryComparison(left?: string, right?: string, addToHistory?: 
   }
 }
 
+// Close the tab at the given index
 function closeTab(index: number) {
   if (index === 0) {
     return
+  }
+  if (tabs.value[index].type === 'file') {
+    removeWatcher(tabs.value[index].left)
+    removeWatcher(tabs.value[index].right)
   }
   tabs.value.splice(index, 1)
   if (index === activeTab.value) {
@@ -60,12 +87,7 @@ function closeTab(index: number) {
   }
 }
 
-function updateElementTitle(element: {
-  name: string
-  type: string
-  left?: string
-  right?: string
-}) {
+function updateElementTitle(element: Tab) {
   let title: string
   if (element.left && element.right) {
     const commonPathLength = getCommonPathLength(element.left, element.right)
@@ -79,18 +101,34 @@ function updateElementTitle(element: {
     title = 'No ' + element.type + ' selected'
   }
   element.name = title
+  // Artificially use the current timestamp. When an updated mtime occurces it should be in the
+  // future (or at least different, hence it causes a re-render of the File component)
+  element.mtime = new Date().getTime()
   document.title = 'Meld (Electron) - ' + element.name
 }
+
+// Switch to the tab at the given index
 function switchTab(index: number) {
   activeTab.value = index
   document.title = 'Meld (Electron) - ' + tabs.value[index].name
 }
 switchTab(0)
-const modal = ref(false)
+
+const settingsModal = ref(false)
 const state = appState()
 
 const fontSize = computed(() => state.value.fontSize)
 
+// When a file is changed in the main process we update the tab's mtime to force a re-render
+window.ipcRenderer.on('file-changed', (_event, filename: string, mtime, event_) => {
+  for (const tab of tabs.value) {
+    if (tab.left === filename || tab.right === filename) {
+      tab.mtime = Math.max(tab.mtime || 0, mtime)
+    }
+  }
+})
+
+// Push an element to the history (or move it to the top if it was already present in the history)
 function updateHistory(newElement: HistoryElement) {
   for (let i = 0; i < state.value.history.length; i++) {
     const element = state.value.history[i]
@@ -134,10 +172,14 @@ function updateHistory(newElement: HistoryElement) {
       </BNavItem>
     </BNav>
   </div>
-  <BButton style="position: absolute; right: 5px; top: 5px" @click="modal = !modal" size="sm">
+  <BButton
+    style="position: absolute; right: 5px; top: 5px"
+    @click="settingsModal = !settingsModal"
+    size="sm"
+  >
     <IBiGearFill />
   </BButton>
-  <BModal v-model="modal" title="Settings" ok-only size="xl" scrollable>
+  <BModal v-model="settingsModal" title="Settings" ok-only size="xl" scrollable>
     <BRow style="font-weight: bold">General </BRow>
     <BFormGroup label-cols="3" label="Font size" label-for="settings_fontSize" class="mb-3">
       <BFormInput id="settings_fontSize" v-model="state.fontSize" />
@@ -186,6 +228,8 @@ function updateHistory(newElement: HistoryElement) {
         :right="element.right"
         :files-selected="
           (left, right) => {
+            removeWatcher(element.left)
+            removeWatcher(element.right)
             element.left = left
             element.right = right
             updateElementTitle(element)
@@ -194,6 +238,7 @@ function updateHistory(newElement: HistoryElement) {
             }
           }
         "
+        :key="(element.left || '') + element.right + element.mtime"
       />
       <Directory
         v-if="element.type === 'directory' && activeTab === index"

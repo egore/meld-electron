@@ -26,9 +26,10 @@ import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path, { join } from 'node:path'
 import os from 'node:os'
-import { copyFileSync, readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
+import { copyFileSync, readFileSync, readdirSync, statSync, existsSync, watch } from 'node:fs'
 import { createHash } from 'node:crypto'
 import trash from 'trash'
+import { FSWatcher } from 'node:original-fs'
 
 export class FileInfo {
   name: string
@@ -108,6 +109,10 @@ async function createWindow() {
 app.whenReady().then(createWindow)
 
 app.on('window-all-closed', () => {
+  for (const filePath of Object.keys(watchers)) {
+    watchers[filePath].close()
+    delete watchers[filePath]
+  }
   win = null
   if (process.platform !== 'darwin') app.quit()
 })
@@ -172,6 +177,41 @@ ipcMain.handle('listDirectory', async (event, dirPath: string) => {
     })
   }
   return files
+})
+
+const watchers: Record<string, FSWatcher> = {}
+
+function removeWatcher(filePath: string): void {
+  if (watchers[filePath]) {
+    win?.webContents.send('main-process-message', `Unregistering ${filePath}`)
+    watchers[filePath].close()
+    delete watchers[filePath]
+  }
+}
+
+function addWatcher(filePath: string): void {
+  const watcher = watch(filePath, (event_) => {
+    if (existsSync(filePath)) {
+      const stats = statSync(filePath)
+      win?.webContents.send('file-changed', filePath, stats.mtime.getTime(), event_)
+      if (event_ === 'rename') {
+        removeWatcher(filePath)
+        addWatcher(filePath)
+      }
+    }
+  })
+  watchers[filePath] = watcher
+}
+
+ipcMain.handle('watchFile', (event, filePath) => {
+  if (watchers[filePath]) {
+    removeWatcher(filePath)
+  }
+  addWatcher(filePath)
+})
+
+ipcMain.handle('unwatchFile', (event, filePath) => {
+  removeWatcher(filePath)
 })
 
 ipcMain.handle('selectFile', async (event, defaultPath) => {
