@@ -26,8 +26,9 @@ import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path, { join } from 'node:path'
 import os from 'node:os'
-import { copyFileSync, readFileSync, readdirSync, rmSync, statSync, existsSync } from 'node:fs'
+import { copyFileSync, readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import { createHash } from 'node:crypto'
+import trash from 'trash'
 
 export class FileInfo {
   name: string
@@ -199,9 +200,9 @@ ipcMain.handle('copyFile', (event, sourcePath: string, destPath: string) => {
   copyFileSync(sourcePath, destPath)
 })
 
-ipcMain.handle('deleteFile', (event, filePath: string) => {
+ipcMain.handle('deleteFile', async (event, filePath: string) => {
   if (!statSync(filePath).isFile()) {
     return
   }
-  rmSync(filePath)
+  await trash(filePath)
 })

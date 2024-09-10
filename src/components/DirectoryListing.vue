@@ -94,13 +94,13 @@ function getStyle(fileA: FileInfo, fileB: FileInfo, isLeft: boolean) {
   return {}
 }
 
-function copyFile(sourcePath: string, destPath: string) {
-  window.ipcRenderer.invoke('copyFile', sourcePath, destPath)
+async function copyFile(sourcePath: string, destPath: string) {
+  await window.ipcRenderer.invoke('copyFile', sourcePath, destPath)
   init()
 }
 
-function deleteFile(filePath: string) {
-  window.ipcRenderer.invoke('deleteFile', filePath)
+async function deleteFile(filePath: string) {
+  await window.ipcRenderer.invoke('deleteFile', filePath)
   init()
 }
 
