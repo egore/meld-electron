@@ -21,6 +21,7 @@ declare module 'vue' {
     BNavItem: typeof import('bootstrap-vue-next')['BNavItem']
     BPopover: typeof import('bootstrap-vue-next')['BPopover']
     BRow: typeof import('bootstrap-vue-next')['BRow']
+    BToast: typeof import('bootstrap-vue-next')['BToast']
     DirectoryListing: typeof import('./src/components/DirectoryListing.vue')['default']
     DirectoryListingLine: typeof import('./src/components/DirectoryListingLine.vue')['default']
     FileSize: typeof import('./src/components/FileSize.vue')['default']

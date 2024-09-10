@@ -13,6 +13,7 @@ const rightFile = ref(props.right)
 const chunks = ref([] as Change[])
 const leftChunks = ref([] as Change[])
 const rightChunks = ref([] as Change[])
+const identical = ref(0)
 
 async function init() {
   const leftText = await window.ipcRenderer.invoke('loadFile', leftFile.value)
@@ -44,6 +45,8 @@ async function init() {
       right_.push(chunk)
     }
   }
+
+  identical.value = left_.length === 1 && right_.length === 1 ? 2500 : 0
 
   chunks.value = chunks_
   leftChunks.value = left_
@@ -95,6 +98,11 @@ init()
 </script>
 
 <template>
+  <Teleport to="body">
+    <div class="bottom-0 end-0 toast-container position-fixed p-3">
+      <BToast v-model="identical" variant="info"> The content of the files is identical </BToast>
+    </div>
+  </Teleport>
   <div v-for="(item, index) in leftChunks" class="row">
     <div
       class="col-sm-6 p-0"
