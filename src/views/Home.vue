@@ -77,7 +77,9 @@ init()
           <IBiFileEarmark v-if="element.type === 'file'" />
           <span
             v-if="element.type === 'file'"
-            @click="startFileComparison([], element.left, element.right, true)"
+            @click="
+              startFileComparison(element.equivalents || [], element.left, element.right, true)
+            "
             style="cursor: pointer"
             >{{ element.left.substring(0, element.common)
             }}{{ element.left.substring(element.common) }} <IBiArrowLeftRight />
@@ -85,7 +87,9 @@ init()
           >
           <span
             v-if="element.type === 'directory'"
-            @click="startDirectoryComparison([], element.left, element.right, true)"
+            @click="
+              startDirectoryComparison(element.equivalents || [], element.left, element.right, true)
+            "
             style="cursor: pointer"
             >{{ element.left.substring(0, element.common)
             }}{{ element.left.substring(element.common) }} <IBiArrowLeftRight />

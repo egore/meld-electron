@@ -59,7 +59,7 @@ function startFileComparison(
   addWatcher(left)
   addWatcher(right)
   if (left && right && addToHistory) {
-    updateHistory({ type: 'file', left: left, right: right })
+    updateHistory({ type: 'file', left: left, right: right, equivalents: equivalents })
   }
 }
 
@@ -82,7 +82,7 @@ function startDirectoryComparison(
     updateElementTitle(tabs.value[activeTab.value])
   }
   if (left && right && addToHistory) {
-    updateHistory({ type: 'directory', left: left, right: right })
+    updateHistory({ type: 'directory', left: left, right: right, equivalents: equivalents })
   }
 }
 
@@ -151,6 +151,9 @@ function updateHistory(newElement: HistoryElement) {
       ((element.left == newElement.left && element.right == newElement.right) ||
         (element.left == newElement.right && element.right == newElement.left))
     ) {
+      if (!newElement.equivalents && element.equivalents) {
+        newElement.equivalents = element.equivalents
+      }
       state.value.history.splice(i, 1)
       break
     }
@@ -250,7 +253,12 @@ function updateHistory(newElement: HistoryElement) {
             element.right = right
             updateElementTitle(element)
             if (left && right) {
-              updateHistory({ type: 'file', left: left, right: right })
+              updateHistory({
+                type: 'file',
+                left: left,
+                right: right,
+                equivalents: element.equivalents
+              })
             }
           }
         "
@@ -277,7 +285,12 @@ function updateHistory(newElement: HistoryElement) {
             element.right = right
             updateElementTitle(element)
             if (left && right) {
-              updateHistory({ type: 'directory', left: left, right: right })
+              updateHistory({
+                type: 'directory',
+                left: left,
+                right: right,
+                equivalents: element.equivalents
+              })
             }
           }
         "

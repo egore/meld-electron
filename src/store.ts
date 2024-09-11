@@ -1,9 +1,11 @@
 import { createGlobalState, useStorage } from '@vueuse/core'
+import { Equivalent } from './components/DirectoryListing.vue'
 
 export type HistoryElement = {
   type: ComparisonType
   left: string
   right: string
+  equivalents?: Equivalent[]
 }
 
 export type ComparisonType = 'directory' | 'file'

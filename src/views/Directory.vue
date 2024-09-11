@@ -76,7 +76,14 @@ const settingsEquivalents = ref(false)
   >
     <IBiArrowsCollapseVertical />
   </BButton>
-  <BModal v-model="settingsEquivalents" title="Equivalents" ok-only size="xl" scrollable>
+  <BModal
+    v-model="settingsEquivalents"
+    title="Equivalents"
+    ok-only
+    size="xl"
+    scrollable
+    @ok="directoriesSelected(leftDirectory, rightDirectory)"
+  >
     <BTableSimple>
       <BTbody>
         <BTr v-for="equivalent in equivalents">
