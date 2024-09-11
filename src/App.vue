@@ -241,6 +241,7 @@ function updateHistory(newElement: HistoryElement) {
         v-if="element.type === 'file' && activeTab === index"
         :left="element.left"
         :right="element.right"
+        :equivalents="element.equivalents"
         :files-selected="
           (left, right) => {
             removeWatcher(element.left)

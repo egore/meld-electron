@@ -2,10 +2,12 @@
 import { ref, Ref } from 'vue'
 import TwoPaneFileDiff from '../components/TwoPaneFileDiff.vue'
 import UnifiedFileDiff from '../components/UnifiedFileDiff.vue'
+import { Equivalent } from '../components/DirectoryListing.vue'
 
 const props = defineProps<{
   left?: string
   right?: string
+  equivalents: Equivalent[]
   filesSelected: (left: string, right: string) => void
 }>()
 
@@ -39,7 +41,13 @@ async function selectFile(filename: Ref<string, string>) {
 </script>
 
 <template>
-  <BButton @click="unified = !unified">
+  {{ equivalents }}
+  <BButton
+    @click="unified = !unified"
+    style="position: absolute; top: 5px; right: 45px"
+    size="sm"
+    title="Equivalents"
+  >
     {{ unified ? 'Two Pane' : 'Unified' }}
   </BButton>
   <div class="row">
@@ -68,12 +76,14 @@ async function selectFile(filename: Ref<string, string>) {
     v-if="unified && leftFilename && rightFilename"
     :left="leftFilename"
     :right="rightFilename"
+    :equivalents="equivalents"
     :key="leftFilename + rightFilename"
   />
   <TwoPaneFileDiff
     v-if="!unified && leftFilename && rightFilename"
     :left="leftFilename"
     :right="rightFilename"
+    :equivalents="equivalents"
     :key="leftFilename + rightFilename"
   />
 </template>

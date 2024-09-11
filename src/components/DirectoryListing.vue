@@ -133,7 +133,7 @@ init()
         :pair="pair"
         :dirs="{ left: left, right: right }"
         :start-file-comparison="(left: string, right: string) => startFileComparison(equivalents, left, right)"
-        :start-directory-comparison="(left: string, right: string) => {console.log(equivalents); startDirectoryComparison(equivalents, left, right)}"
+        :start-directory-comparison="(left: string, right: string) => startDirectoryComparison(equivalents, left, right)"
         :delete-directory="deleteDirectory"
         :reload="init"
         :delete-file="deleteFile"

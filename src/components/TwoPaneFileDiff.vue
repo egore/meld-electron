@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { diffLines, Change } from 'diff'
 
 import { appState } from '../store'
+import { Equivalent } from './DirectoryListing.vue'
 
 const state = appState()
 
@@ -15,6 +16,7 @@ const svgViewBox = computed(() => {
 const props = defineProps<{
   left: string
   right: string
+  equivalents: Equivalent[]
 }>()
 
 const leftFile = ref(props.left)
@@ -28,13 +30,26 @@ const identical = ref(0)
 let leftText = ''
 let rightText = ''
 
+interface EuiqvChange extends Change {
+  equived?: boolean
+}
+
 async function init() {
   leftText = (await window.ipcRenderer.invoke('loadFile', leftFile.value)) as string
   rightText = (await window.ipcRenderer.invoke('loadFile', rightFile.value)) as string
-  const chunks_ = diffLines(leftText, rightText)
 
-  const left_ = []
-  const right_ = []
+  let leftTextForDiff = leftText
+  let rightTextForDiff = rightText
+  for (let i = 0; i < props.equivalents.length; i++) {
+    const eq = props.equivalents[i]
+    leftTextForDiff = leftTextForDiff.replaceAll(eq.left, `[equivalent_${i}]`)
+    rightTextForDiff = rightTextForDiff.replaceAll(eq.right, `[equivalent_${i}]`)
+  }
+
+  const chunks_ = diffLines(leftTextForDiff, rightTextForDiff)
+
+  const left_: EuiqvChange[] = []
+  const right_: EuiqvChange[] = []
   for (let i = 0; i < chunks_.length; i++) {
     const chunk = chunks_[i]
     if (chunk.added) {
@@ -55,7 +70,24 @@ async function init() {
       }
     } else {
       left_.push(chunk)
-      right_.push(chunk)
+      right_.push({ ...chunk })
+    }
+  }
+
+  for (let i = 0; i < props.equivalents.length; i++) {
+    for (const chunk of left_) {
+      const newValue = chunk.value.replaceAll(`[equivalent_${i}]`, props.equivalents[i].left)
+      if (chunk.value != newValue) {
+        chunk.equived = true
+      }
+      chunk.value = newValue
+    }
+    for (const chunk of right_) {
+      const newValue = chunk.value.replaceAll(`[equivalent_${i}]`, props.equivalents[i].right)
+      if (chunk.value != newValue) {
+        chunk.equived = true
+      }
+      chunk.value = newValue
     }
   }
 
@@ -66,7 +98,7 @@ async function init() {
   rightChunks.value = right_
 }
 
-function getBackgroundColor(chunkA?: Change, chunkB?: Change): string {
+function getBackgroundColor(chunkA?: EuiqvChange, chunkB?: EuiqvChange): string {
   if ((chunkA && !chunkB) || (chunkB && !chunkA)) {
     return '#d0ffa3'
   }
@@ -75,6 +107,9 @@ function getBackgroundColor(chunkA?: Change, chunkB?: Change): string {
   }
   if (chunkA?.added || chunkA?.removed) {
     return '#d0ffa3'
+  }
+  if (chunkA?.equived || chunkB?.equived) {
+    return '#f8f8f8'
   }
   return ''
 }
