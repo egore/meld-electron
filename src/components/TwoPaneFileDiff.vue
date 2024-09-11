@@ -1,6 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { diffLines, Change } from 'diff'
+
+import { appState } from '../store'
+
+const state = appState()
+
+const fontSize = computed(() => state.value.fontSize)
+const svgViewBox = computed(() => {
+  const size = state.value.fontSize.split('px')[0]
+  return `0 0 ${size} ${size}`
+})
 
 const props = defineProps<{
   left: string
@@ -15,9 +25,12 @@ const leftChunks = ref([] as Change[])
 const rightChunks = ref([] as Change[])
 const identical = ref(0)
 
+let leftText = ''
+let rightText = ''
+
 async function init() {
-  const leftText = await window.ipcRenderer.invoke('loadFile', leftFile.value)
-  const rightText = await window.ipcRenderer.invoke('loadFile', rightFile.value)
+  leftText = (await window.ipcRenderer.invoke('loadFile', leftFile.value)) as string
+  rightText = (await window.ipcRenderer.invoke('loadFile', rightFile.value)) as string
   const chunks_ = diffLines(leftText, rightText)
 
   const left_ = []
@@ -94,6 +107,31 @@ function onScroll(index: number, origin: 'left' | 'right'): void {
   }
 }
 
+function removeChunk(index: number, pane: 'left' | 'right'): void {
+  if (pane === 'left') {
+    leftChunks.value.splice(index, 1)
+    if (!rightChunks.value[index].added && !rightChunks.value[index].removed) {
+      rightChunks.value.splice(index, 1)
+    }
+  } else {
+    rightChunks.value.splice(index, 1)
+    if (!leftChunks.value[index].added && !leftChunks.value[index].removed) {
+      leftChunks.value.splice(index, 1)
+    }
+  }
+}
+
+function replaceChunk(index: number, pane: 'left' | 'right'): void {
+  if (pane === 'left') {
+    leftChunks.value[index].value = rightChunks.value[index].value
+  } else {
+    rightChunks.value[index].value = leftChunks.value[index].value
+  }
+  leftChunks.value[index].added = false
+  leftChunks.value[index].removed = false
+  rightChunks.value[index].added = false
+  rightChunks.value[index].removed = false
+}
 init()
 </script>
 
@@ -103,34 +141,91 @@ init()
       <BToast v-model="identical" variant="info"> The content of the files is identical </BToast>
     </div>
   </Teleport>
-  <div v-for="(item, index) in leftChunks" class="row">
+  <div v-for="(leftChunk, index) in leftChunks" class="row">
     <div
       class="col-sm-6 p-0"
-      :style="{ background: getBackgroundPattern(item, rightChunks[index]) }"
+      :style="{ background: getBackgroundPattern(leftChunk, rightChunks[index]) }"
+      style="width: calc(50% - 20px)"
     >
       <pre
         class="m-0"
         style="width: 10px; float: left"
-        :style="{ backgroundColor: getBackgroundColor(item, rightChunks[index]) }"
-        >{{ prefix(item) }}</pre
+        :style="{ backgroundColor: getBackgroundColor(leftChunk, rightChunks[index]) }"
+        >{{ prefix(leftChunk) }}</pre
       >
       <pre
         class="m-0"
         :id="`left-chunk-${index}`"
         @scroll="onScroll(index, 'left')"
         style="overflow-y: scroll"
-        :style="{ backgroundColor: getBackgroundColor(item, rightChunks[index]) }"
-        >{{ item.value }}</pre
+        :style="{ backgroundColor: getBackgroundColor(leftChunk, rightChunks[index]) }"
+        >{{ leftChunk.value }}</pre
       >
     </div>
     <div
+      style="width: 40px; padding: 0; text-align: center"
+      :style="{
+        height: fontSize
+      }"
+    >
+      <span
+        class="action"
+        v-if="leftChunk.removed && !rightChunks[index].added"
+        @click="removeChunk(index, 'left')"
+        title="Delete chunk on the left"
+      >
+        <IBiArrowLeft :viewBox="svgViewBox" :width="fontSize" :height="fontSize" />
+      </span>
+      <span
+        class="action"
+        v-if="leftChunk.removed && !rightChunks[index].added"
+        @click="replaceChunk(index, 'right')"
+        title="Insert chunk to the right"
+      >
+        <IBiArrowRight :viewBox="svgViewBox" :width="fontSize" :height="fontSize" />
+      </span>
+      <span
+        class="action"
+        v-if="!leftChunk.removed && rightChunks[index].added"
+        @click="replaceChunk(index, 'left')"
+        title="Insert chunk to the left"
+      >
+        <IBiArrowLeft :viewBox="svgViewBox" :width="fontSize" :height="fontSize" />
+      </span>
+      <span
+        class="action"
+        v-if="!leftChunk.removed && rightChunks[index].added"
+        @click="removeChunk(index, 'right')"
+        title="Delete chunk on the right"
+      >
+        <IBiArrowRight :viewBox="svgViewBox" :width="fontSize" :height="fontSize" />
+      </span>
+      <span
+        class="action"
+        v-if="leftChunk.removed && rightChunks[index].added"
+        @click="replaceChunk(index, 'left')"
+        title="Replace chunk on the left with content from the right"
+      >
+        <IBiArrowLeft :viewBox="svgViewBox" :width="fontSize" :height="fontSize" />
+      </span>
+      <span
+        class="action"
+        v-if="leftChunk.removed && rightChunks[index].added"
+        @click="replaceChunk(index, 'right')"
+        title="Replace chunk on the right with content from the left"
+      >
+        <IBiArrowRight :viewBox="svgViewBox" :width="fontSize" :height="fontSize" />
+      </span>
+    </div>
+    <div
       class="col-sm-6 p-0"
-      :style="{ background: getBackgroundPattern(rightChunks[index], item) }"
+      :style="{ background: getBackgroundPattern(rightChunks[index], leftChunk) }"
+      style="width: calc(50% - 20px)"
     >
       <pre
         class="m-0"
         style="width: 10px; float: left"
-        :style="{ backgroundColor: getBackgroundColor(rightChunks[index], item) }"
+        :style="{ backgroundColor: getBackgroundColor(rightChunks[index], leftChunk) }"
         >{{ prefix(rightChunks[index]) }}</pre
       >
       <pre
@@ -138,9 +233,20 @@ init()
         :id="`right-chunk-${index}`"
         @scroll="onScroll(index, 'right')"
         style="overflow-y: scroll"
-        :style="{ backgroundColor: getBackgroundColor(rightChunks[index], item) }"
+        :style="{ backgroundColor: getBackgroundColor(rightChunks[index], leftChunk) }"
         >{{ rightChunks[index].value }}</pre
       >
     </div>
   </div>
 </template>
+
+<style scope>
+.action {
+  cursor: pointer;
+  height: v-bind('fontSize');
+  display: inline-block;
+  position: relative;
+  left: -2px;
+  top: -3px;
+}
+</style>

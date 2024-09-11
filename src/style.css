@@ -1,0 +1,5 @@
+/* Somewhere an additional 2px offset is added, remove it with this workaround */
+button svg,
+a svg {
+  margin-top: -2px;
+}
