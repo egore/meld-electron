@@ -5,8 +5,8 @@ const props = defineProps<{
   position: 'left' | 'right'
   pair: { left: FileInfo; right: FileInfo }
   dirs: { left: string; right: string }
-  showFileDiff: (left: string, right: string) => Promise<void>
-  showDirectoryDiff: (left: string, right: string) => Promise<void>
+  startFileComparison: (left: string, right: string) => Promise<void>
+  startDirectoryComparison: (left: string, right: string) => Promise<void>
   reload: () => Promise<void>
   copyFile: (left: string, right: string) => Promise<void>
   deleteDirectory: (dirPath: string) => Promise<void>
@@ -23,6 +23,14 @@ function getStyle(fileA: FileInfo, fileB: FileInfo, origin: 'left' | 'right') {
   }
   if (fileA.name && fileB.type === 'dummy') {
     return { color: origin === 'left' ? '#bf0000' : '#219a32' }
+  }
+  if (fileA.name != fileB.name) {
+    if (origin === 'left' && fileA.name === fileB.equivalentName) {
+      return { color: '#bf0000' }
+    }
+    if (origin === 'right' && fileA.equivalentName === fileB.name) {
+      return { color: '#219a32' }
+    }
   }
   if (fileB.name && fileA.sha1sum !== fileB.sha1sum) {
     return { color: '#3370e5' }
@@ -44,7 +52,9 @@ const otherPosition = props.position === 'left' ? 'right' : 'left'
     </span>
     <span class="col-sm-6 p-0 oneline">
       <span
-        @dblclick="showFileDiff(join(dirs.left, pair.left.name), join(dirs.right, pair.right.name))"
+        @dblclick="
+          startFileComparison(join(dirs.left, pair.left.name), join(dirs.right, pair.right.name))
+        "
         style="cursor: pointer"
         v-if="pair.left.type === 'file' && pair.right.type === 'file'"
       >
@@ -58,7 +68,10 @@ const otherPosition = props.position === 'left' ? 'right' : 'left'
             size="sm"
             class="ml-2"
             @click="
-              showFileDiff(join(dirs.left, pair.left.name), join(dirs.right, pair.right.name))
+              startFileComparison(
+                join(dirs.left, pair.left.name),
+                join(dirs.right, pair.right.name)
+              )
             "
             >Show</BButton
           >
@@ -66,7 +79,10 @@ const otherPosition = props.position === 'left' ? 'right' : 'left'
       </span>
       <span
         @dblclick="
-          showDirectoryDiff(join(dirs.left, pair.left.name), join(dirs.right, pair.right.name))
+          startDirectoryComparison(
+            join(dirs.left, pair.left.name),
+            join(dirs.right, pair.right.name)
+          )
         "
         style="cursor: pointer"
         v-else-if="pair.left.type === 'directory' && pair.right.type === 'directory'"
@@ -81,7 +97,10 @@ const otherPosition = props.position === 'left' ? 'right' : 'left'
             size="sm"
             class="ml-2"
             @click="
-              showDirectoryDiff(join(dirs.left, pair.left.name), join(dirs.right, pair.right.name))
+              startDirectoryComparison(
+                join(dirs.left, pair.left.name),
+                join(dirs.right, pair.right.name)
+              )
             "
             >Show</BButton
           >

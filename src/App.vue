@@ -6,6 +6,7 @@ import File from './views/File.vue'
 import Directory from './views/Directory.vue'
 import { ComparisonType, HistoryElement, appState } from './store'
 import { getCommonPathLength } from './pathutil'
+import { Equivalent } from './components/DirectoryListing.vue'
 
 // Tab definition for files and directories
 type Tab = {
@@ -14,6 +15,7 @@ type Tab = {
   left?: string
   right?: string
   mtime?: number
+  equivalents: Equivalent[]
 }
 
 // Start with the home tab open by default
@@ -37,12 +39,18 @@ function removeWatcher(filePath?: string): void {
 }
 
 // Start a new file comparison, optionally adding it to the history of comparisons
-function startFileComparison(left?: string, right?: string, addToHistory?: boolean) {
+function startFileComparison(
+  equivalents: Equivalent[],
+  left?: string,
+  right?: string,
+  addToHistory?: boolean
+) {
   tabs.value.push({
     type: 'file',
     name: 'No files selected',
     left: left,
-    right: right
+    right: right,
+    equivalents: equivalents
   })
   activeTab.value = tabs.value.length - 1
   if (left || right) {
@@ -56,12 +64,18 @@ function startFileComparison(left?: string, right?: string, addToHistory?: boole
 }
 
 // Start a new directory comparison, optionally adding it to the history of comparisons
-function startDirectoryComparison(left?: string, right?: string, addToHistory?: boolean) {
+function startDirectoryComparison(
+  equivalents: Equivalent[],
+  left?: string,
+  right?: string,
+  addToHistory?: boolean
+) {
   tabs.value.push({
     type: 'directory',
     name: 'No directories selected',
     left: left,
-    right: right
+    right: right,
+    equivalents: equivalents
   })
   activeTab.value = tabs.value.length - 1
   if (left || right) {
@@ -176,6 +190,7 @@ function updateHistory(newElement: HistoryElement) {
     style="position: absolute; right: 5px; top: 5px"
     @click="settingsModal = !settingsModal"
     size="sm"
+    title="Application settings"
   >
     <IBiGearFill />
   </BButton>
@@ -244,14 +259,15 @@ function updateHistory(newElement: HistoryElement) {
         v-if="element.type === 'directory' && activeTab === index"
         :left="element.left"
         :right="element.right"
-        :show-file-diff="
-          (left, right) => {
-            startFileComparison(left, right)
+        :equivalents="element.equivalents"
+        :start-file-comparison="
+          (equivalents: Equivalent[], left: string, right: string) => {
+            startFileComparison(equivalents, left, right)
           }
         "
-        :show-directory-diff="
-          (left, right) => {
-            startDirectoryComparison(left, right)
+        :start-directory-comparison="
+          (equivalents: Equivalent[], left: string, right: string) => {
+            startDirectoryComparison(equivalents, left, right)
           }
         "
         :directories-selected="

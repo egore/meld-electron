@@ -1,8 +1,10 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { format } from 'date-fns'
 
-import FileSize from '../components/FileSize.vue'
+export type Equivalent = {
+  left: string
+  right: string
+}
 
 function join(...elements: string[]): string {
   return elements.map((element, index) => `${index === 0 ? '' : '/'}${element}`).join('')
@@ -13,8 +15,9 @@ const props = defineProps<{
   right: string
   skipIdentical: boolean
   ignorePatterns?: RegExp[]
-  showFileDiff: (left: string, right: string) => void
-  showDirectoryDiff: (left: string, right: string) => void
+  equivalents: Equivalent[]
+  startFileComparison: (equivalents: Equivalent[], left: string, right: string) => void
+  startDirectoryComparison: (equivalents: Equivalent[], left: string, right: string) => void
 }>()
 
 const filesLeft = ref([] as FileInfo[])
@@ -36,11 +39,29 @@ function isSkipped(file: FileInfo) {
   return skip
 }
 
+function initEquivalents(file: FileInfo) {
+  if (!file.equivalentName) {
+    file.equivalentName = file.name
+    if (props.equivalents) {
+      for (const equivalent of props.equivalents) {
+        if (equivalent.right) {
+          file.equivalentName = file.equivalentName.replace(equivalent.right, equivalent.left)
+        }
+      }
+    }
+  }
+}
+
 async function init() {
   filesLeft.value = await window.ipcRenderer.invoke('listDirectory', props.left)
   filesLeft.value.sort()
   filesRight.value = await window.ipcRenderer.invoke('listDirectory', props.right)
-  filesRight.value.sort()
+  for (const file of filesRight.value) {
+    initEquivalents(file)
+  }
+  filesRight.value.sort((a, b) => {
+    return (a.equivalentName as string) < (b.equivalentName as string) ? -1 : 1
+  })
 
   pairs.value = []
 
@@ -55,7 +76,7 @@ async function init() {
       if (isSkipped(rightFile)) {
         continue
       }
-      if (leftFile.name === rightFile.name) {
+      if (leftFile.name === rightFile.equivalentName) {
         if (
           leftFile.type !== 'file' ||
           !props.skipIdentical ||
@@ -65,13 +86,13 @@ async function init() {
         }
         j++
         break
-      } else if (leftFile.name < rightFile.name) {
+      } else if (leftFile.name < (rightFile.equivalentName as string)) {
         pairs.value.push({
           left: leftFile,
           right: { size: 0, type: 'dummy', name: leftFile.name } as FileInfo
         })
         break
-      } else if (leftFile.name > rightFile.name) {
+      } else if (leftFile.name > (rightFile.equivalentName as string)) {
         pairs.value.push({
           left: { size: 0, type: 'dummy', name: rightFile.name } as FileInfo,
           right: rightFile
@@ -79,19 +100,6 @@ async function init() {
       }
     }
   }
-}
-
-function getStyle(fileA: FileInfo, fileB: FileInfo, isLeft: boolean) {
-  if (fileA.type === 'dummy') {
-    return { color: 'lightgray', 'text-decoration': 'line-through' }
-  }
-  if (fileA.name && fileB.type === 'dummy') {
-    return { color: isLeft ? '#bf0000' : '#219a32' }
-  }
-  if (fileB.name && fileA.sha1sum !== fileB.sha1sum) {
-    return { color: '#3370e5' }
-  }
-  return {}
 }
 
 async function copyFile(sourcePath: string, destPath: string) {
@@ -124,8 +132,8 @@ init()
         position="left"
         :pair="pair"
         :dirs="{ left: left, right: right }"
-        :show-file-diff="showFileDiff"
-        :show-directory-diff="showDirectoryDiff"
+        :start-file-comparison="(left: string, right: string) => startFileComparison(equivalents, left, right)"
+        :start-directory-comparison="(left: string, right: string) => {console.log(equivalents); startDirectoryComparison(equivalents, left, right)}"
         :delete-directory="deleteDirectory"
         :reload="init"
         :delete-file="deleteFile"
@@ -167,8 +175,8 @@ init()
         position="right"
         :pair="pair"
         :dirs="{ left: left, right: right }"
-        :show-file-diff="showFileDiff"
-        :show-directory-diff="showDirectoryDiff"
+        :start-file-comparison="startFileComparison"
+        :start-directory-comparison="startDirectoryComparison"
         :delete-directory="deleteDirectory"
         :reload="init"
         :delete-file="deleteFile"

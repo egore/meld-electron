@@ -2,10 +2,21 @@
 import { computed } from 'vue'
 import { HistoryElement, appState } from '../store'
 import { getCommonPathLength } from '../pathutil'
+import { Equivalent } from '../components/DirectoryListing.vue'
 
 defineProps<{
-  startFileComparison: (left?: string, right?: string, addToHistory?: boolean) => void
-  startDirectoryComparison: (left?: string, right?: string, addToHistory?: boolean) => void
+  startFileComparison: (
+    equivalents: Equivalent[],
+    left?: string,
+    right?: string,
+    addToHistory?: boolean
+  ) => void
+  startDirectoryComparison: (
+    equivalents: Equivalent[],
+    left?: string,
+    right?: string,
+    addToHistory?: boolean
+  ) => void
 }>()
 
 const state = appState()
@@ -43,7 +54,7 @@ init()
           <IBiFileEarmarkPlus style="font-size: 3rem" />
         </BCardText>
 
-        <BButton style="width: 100%" @click="startFileComparison()">New file comparison</BButton>
+        <BButton style="width: 100%" @click="startFileComparison([])">New file comparison</BButton>
       </BCard>
     </div>
     <div class="col-sm-4 col-md-3 col-lg-2">
@@ -52,7 +63,7 @@ init()
           <IBiFolderPlus style="font-size: 3rem" />
         </BCardText>
 
-        <BButton style="width: 100%" @click="startDirectoryComparison()"
+        <BButton style="width: 100%" @click="startDirectoryComparison([])"
           >New directory comparison</BButton
         >
       </BCard>
@@ -66,7 +77,7 @@ init()
           <IBiFileEarmark v-if="element.type === 'file'" />
           <span
             v-if="element.type === 'file'"
-            @click="startFileComparison(element.left, element.right, true)"
+            @click="startFileComparison([], element.left, element.right, true)"
             style="cursor: pointer"
             >{{ element.left.substring(0, element.common)
             }}{{ element.left.substring(element.common) }} <IBiArrowLeftRight />
@@ -74,7 +85,7 @@ init()
           >
           <span
             v-if="element.type === 'directory'"
-            @click="startDirectoryComparison(element.left, element.right, true)"
+            @click="startDirectoryComparison([], element.left, element.right, true)"
             style="cursor: pointer"
             >{{ element.left.substring(0, element.common)
             }}{{ element.left.substring(element.common) }} <IBiArrowLeftRight />

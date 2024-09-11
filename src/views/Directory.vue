@@ -1,14 +1,15 @@
 <script lang="ts" setup>
 import { computed, ref, Ref } from 'vue'
-import DirectoryListing from '../components/DirectoryListing.vue'
+import DirectoryListing, { Equivalent } from '../components/DirectoryListing.vue'
 import { appState } from '../store'
 
 const props = defineProps<{
   left?: string
   right?: string
+  equivalents: Equivalent[]
   directoriesSelected: (left: string, right: string) => void
-  showFileDiff: (left: string, right: string) => void
-  showDirectoryDiff: (left: string, right: string) => void
+  startFileComparison: (equivalents: Equivalent[], left: string, right: string) => void
+  startDirectoryComparison: (equivalents: Equivalent[], left: string, right: string) => void
 }>()
 
 const leftDirectory = ref(props.left || '')
@@ -54,9 +55,47 @@ const ignorePatterns = computed(() => {
   }
   return result
 })
+
+const equivalentsKey = computed(() => {
+  var len = 0
+  for (const e of props.equivalents) {
+    len += e.left.length + e.right.length
+  }
+  return len
+})
+
+const settingsEquivalents = ref(false)
 </script>
 
 <template>
+  <BButton
+    @click="settingsEquivalents = true"
+    style="position: absolute; top: 5px; right: 45px"
+    size="sm"
+    title="Equivalents"
+  >
+    <IBiArrowsCollapseVertical />
+  </BButton>
+  <BModal v-model="settingsEquivalents" title="Equivalents" ok-only size="xl" scrollable>
+    <BTableSimple>
+      <BTbody>
+        <BTr v-for="equivalent in equivalents">
+          <BTd><BFormInput v-model="equivalent.left" /></BTd>
+          <BTd><BFormInput v-model="equivalent.right" /></BTd>
+          <BTd
+            ><BButton @click="equivalents.splice(equivalents.indexOf(equivalent), 1)"
+              >Delete</BButton
+            ></BTd
+          >
+        </BTr>
+        <BTr>
+          <BTd colspan="23">
+            <BButton @click="equivalents.push({ left: '', right: '' })">Add</BButton>
+          </BTd>
+        </BTr>
+      </BTbody>
+    </BTableSimple>
+  </BModal>
   <div class="row">
     <div class="col-sm-6 p-0">
       <BInputGroup>
@@ -84,21 +123,22 @@ const ignorePatterns = computed(() => {
     </div>
   </div>
   <DirectoryListing
-    :show-file-diff="
-      (left, right) => {
-        showFileDiff(left, right)
+    :start-file-comparison="
+      (equivalents, left, right) => {
+        startFileComparison(equivalents, left, right)
       }
     "
-    :show-directory-diff="
-      (left, right) => {
-        showDirectoryDiff(left, right)
+    :start-directory-comparison="
+      (equivalents, left, right) => {
+        startDirectoryComparison(equivalents, left, right)
       }
     "
     :skip-identical="state.directory.ignoreIdentical"
     v-if="leftDirectory && rightDirectory"
     :left="leftDirectory"
     :right="rightDirectory"
-    :key="leftDirectory + rightDirectory + state.directory.ignoreIdentical"
+    :key="leftDirectory + rightDirectory + state.directory.ignoreIdentical + equivalentsKey"
     :ignore-patterns="ignorePatterns"
+    :equivalents="equivalents"
   />
 </template>
