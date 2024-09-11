@@ -31,6 +31,7 @@ import { createHash } from 'node:crypto'
 import trash from 'trash'
 import { FSWatcher } from 'node:original-fs'
 
+// This needs to stay in sync with src/electron.d.ts
 export class FileInfo {
   name: string
   size: number
@@ -92,11 +93,6 @@ async function createWindow() {
   } else {
     win.loadFile(indexHtml)
   }
-
-  // Test actively push message to the Electron-Renderer
-  win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', new Date().toLocaleString())
-  })
 
   // Make all links open with the browser, not with the application
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -183,7 +179,7 @@ const watchers: Record<string, FSWatcher> = {}
 
 function removeWatcher(filePath: string): void {
   if (watchers[filePath]) {
-    win?.webContents.send('main-process-message', `Unregistering ${filePath}`)
+    //win?.webContents.send('main-process-message', `Unregistering ${filePath}`)
     watchers[filePath].close()
     delete watchers[filePath]
   }
