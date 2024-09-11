@@ -23,6 +23,16 @@ const history = computed(() => {
   }
   return result
 })
+
+async function init() {
+  for (const element of state.value.history) {
+    const exist = await window.ipcRenderer.invoke('filesExist', element.left, element.right)
+    if (!exist[0] || !exist[1]) {
+      state.value.history.splice(state.value.history.indexOf(element), 1)
+    }
+  }
+}
+init()
 </script>
 
 <template>

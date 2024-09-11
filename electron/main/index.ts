@@ -226,6 +226,13 @@ ipcMain.handle('selectDirectory', async (event, defaultPath) => {
   return result.filePaths[0]
 })
 
+ipcMain.handle('filesExist', (event, ...filePaths: string[]) => {
+  const result = filePaths.map((filePath) => {
+    return existsSync(filePath)
+  })
+  return result
+})
+
 ipcMain.handle('copyFile', (event, sourcePath: string, destPath: string, overwrite?: boolean) => {
   if (!statSync(sourcePath).isFile()) {
     return
