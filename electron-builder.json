@@ -9,7 +9,8 @@
   "files": ["dist", "dist-electron"],
   "mac": {
     "target": ["dmg"],
-    "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
+    "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
+    "icon": "build/icon.png"
   },
   "win": {
     "target": [
