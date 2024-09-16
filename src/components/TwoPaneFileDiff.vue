@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { diffLines, Change } from 'diff'
 
 import { appState } from '../store'
-import { Equivalent } from './DirectoryListing.vue'
+import { Equivalent } from './EquivalentsSettings.vue'
 
 const state = appState()
 

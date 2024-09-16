@@ -1,10 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-
-export type Equivalent = {
-  left: string
-  right: string
-}
+import { Equivalent } from './EquivalentsSettings.vue'
 
 function join(...elements: string[]): string {
   return elements.map((element, index) => `${index === 0 ? '' : '/'}${element}`).join('')

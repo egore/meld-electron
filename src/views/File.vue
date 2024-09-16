@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { ref, Ref } from 'vue'
+import { computed, ref, Ref } from 'vue'
 import TwoPaneFileDiff from '../components/TwoPaneFileDiff.vue'
 import UnifiedFileDiff from '../components/UnifiedFileDiff.vue'
-import { Equivalent } from '../components/DirectoryListing.vue'
+import { Equivalent } from '../components/EquivalentsSettings.vue'
 
 const props = defineProps<{
   left?: string
@@ -11,40 +11,48 @@ const props = defineProps<{
   filesSelected: (left: string, right: string) => void
 }>()
 
-const leftFilename = ref(props.left || '')
-const rightFilename = ref(props.right || '')
+const leftFile = ref(props.left || '')
+const rightFile = ref(props.right || '')
 
 const unified = ref(false)
 
 async function selectLeft() {
-  selectFile(leftFilename)
+  selectFile(leftFile)
 }
 
 async function selectRight() {
-  selectFile(rightFilename)
+  selectFile(rightFile)
 }
 
-async function selectFile(filename: Ref<string, string>) {
-  const lastSlash = filename.value.lastIndexOf('/')
+async function selectFile(file: Ref<string, string>) {
+  const lastSlash = file.value.lastIndexOf('/')
   let dir: string | undefined = undefined
   if (lastSlash !== -1) {
-    dir = filename.value.slice(0, lastSlash)
+    dir = file.value.slice(0, lastSlash)
   }
   const selectedFile: string = await window.ipcRenderer.invoke('selectFile', dir)
   if (!selectedFile) {
     return
   }
-  filename.value = selectedFile
+  file.value = selectedFile
 
-  props.filesSelected(leftFilename.value, rightFilename.value)
+  props.filesSelected(leftFile.value, rightFile.value)
 }
+
+const equivalentsKey = computed(() => {
+  let len = 0
+  for (const e of props.equivalents) {
+    len += e.left.length + e.right.length
+  }
+  return len
+})
 </script>
 
 <template>
-  {{ equivalents }}
+  <EquivalentsSettings @ok="filesSelected(leftFile, rightFile)" :equivalents="equivalents" />
   <BButton
     @click="unified = !unified"
-    style="position: absolute; top: 5px; right: 45px"
+    style="position: absolute; top: 5px; right: 85px"
     size="sm"
     title="Equivalents"
   >
@@ -53,7 +61,7 @@ async function selectFile(filename: Ref<string, string>) {
   <div class="row">
     <div class="col-sm-6 p-0">
       <BInputGroup>
-        <BInput disabled :model-value="leftFilename" placeholder="Please select left file"></BInput>
+        <BInput disabled :model-value="leftFile" placeholder="Please select left file"></BInput>
         <template #append>
           <BButton variant="outline-secondary" @click="selectLeft">...</BButton>
         </template>
@@ -61,11 +69,7 @@ async function selectFile(filename: Ref<string, string>) {
     </div>
     <div class="col-sm-6 p-0">
       <BInputGroup>
-        <BInput
-          disabled
-          :model-value="rightFilename"
-          placeholder="Please select right file"
-        ></BInput>
+        <BInput disabled :model-value="rightFile" placeholder="Please select right file"></BInput>
         <template #append>
           <BButton variant="outline-secondary" @click="selectRight">...</BButton>
         </template>
@@ -73,17 +77,17 @@ async function selectFile(filename: Ref<string, string>) {
     </div>
   </div>
   <UnifiedFileDiff
-    v-if="unified && leftFilename && rightFilename"
-    :left="leftFilename"
-    :right="rightFilename"
+    v-if="unified && leftFile && rightFile"
+    :left="leftFile"
+    :right="rightFile"
     :equivalents="equivalents"
-    :key="leftFilename + rightFilename"
+    :key="leftFile + rightFile + equivalentsKey"
   />
   <TwoPaneFileDiff
-    v-if="!unified && leftFilename && rightFilename"
-    :left="leftFilename"
-    :right="rightFilename"
+    v-if="!unified && leftFile && rightFile"
+    :left="leftFile"
+    :right="rightFile"
     :equivalents="equivalents"
-    :key="leftFilename + rightFilename"
+    :key="leftFile + rightFile + equivalentsKey"
   />
 </template>

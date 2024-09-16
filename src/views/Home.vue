@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { HistoryElement, appState } from '../store'
 import { getCommonPathLength } from '../pathutil'
-import { Equivalent } from '../components/DirectoryListing.vue'
+import { Equivalent } from '../components/EquivalentsSettings.vue'
 
 defineProps<{
   startFileComparison: (

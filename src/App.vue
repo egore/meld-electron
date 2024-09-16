@@ -6,7 +6,7 @@ import File from './views/File.vue'
 import Directory from './views/Directory.vue'
 import { ComparisonType, HistoryElement, appState } from './store'
 import { getCommonPathLength } from './pathutil'
-import { Equivalent } from './components/DirectoryListing.vue'
+import { Equivalent } from './components/EquivalentsSettings.vue'
 
 // Tab definition for files and directories
 type Tab = {

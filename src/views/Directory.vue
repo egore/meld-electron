@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import { computed, ref, Ref } from 'vue'
-import DirectoryListing, { Equivalent } from '../components/DirectoryListing.vue'
+import DirectoryListing from '../components/DirectoryListing.vue'
 import { appState } from '../store'
+import EquivalentsSettings, { Equivalent } from '../components/EquivalentsSettings.vue'
 
 const props = defineProps<{
   left?: string
@@ -57,52 +58,19 @@ const ignorePatterns = computed(() => {
 })
 
 const equivalentsKey = computed(() => {
-  var len = 0
+  let len = 0
   for (const e of props.equivalents) {
     len += e.left.length + e.right.length
   }
   return len
 })
-
-const settingsEquivalents = ref(false)
 </script>
 
 <template>
-  <BButton
-    @click="settingsEquivalents = true"
-    style="position: absolute; top: 5px; right: 45px"
-    size="sm"
-    title="Equivalents"
-  >
-    <IBiArrowsCollapseVertical />
-  </BButton>
-  <BModal
-    v-model="settingsEquivalents"
-    title="Equivalents"
-    ok-only
-    size="xl"
-    scrollable
+  <EquivalentsSettings
     @ok="directoriesSelected(leftDirectory, rightDirectory)"
-  >
-    <BTableSimple>
-      <BTbody>
-        <BTr v-for="equivalent in equivalents">
-          <BTd><BFormInput v-model="equivalent.left" /></BTd>
-          <BTd><BFormInput v-model="equivalent.right" /></BTd>
-          <BTd
-            ><BButton @click="equivalents.splice(equivalents.indexOf(equivalent), 1)"
-              >Delete</BButton
-            ></BTd
-          >
-        </BTr>
-        <BTr>
-          <BTd colspan="23">
-            <BButton @click="equivalents.push({ left: '', right: '' })">Add</BButton>
-          </BTd>
-        </BTr>
-      </BTbody>
-    </BTableSimple>
-  </BModal>
+    :equivalents="equivalents"
+  />
   <div class="row">
     <div class="col-sm-6 p-0">
       <BInputGroup>

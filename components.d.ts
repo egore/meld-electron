@@ -28,6 +28,7 @@ declare module 'vue' {
     BTr: typeof import('bootstrap-vue-next')['BTr']
     DirectoryListing: typeof import('./src/components/DirectoryListing.vue')['default']
     DirectoryListingLine: typeof import('./src/components/DirectoryListingLine.vue')['default']
+    EquivalentsSettings: typeof import('./src/components/EquivalentsSettings.vue')['default']
     FileSize: typeof import('./src/components/FileSize.vue')['default']
     IBiArrowLeft: typeof import('~icons/bi/arrow-left')['default']
     IBiArrowLeftRight: typeof import('~icons/bi/arrow-left-right')['default']

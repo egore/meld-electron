@@ -1,5 +1,5 @@
 import { createGlobalState, useStorage } from '@vueuse/core'
-import { Equivalent } from './components/DirectoryListing.vue'
+import { Equivalent } from './components/EquivalentsSettings.vue'
 
 export type HistoryElement = {
   type: ComparisonType
