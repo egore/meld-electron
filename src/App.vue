@@ -4,7 +4,7 @@ import { computed, ref } from 'vue'
 import Home from './views/Home.vue'
 import File from './views/File.vue'
 import Directory from './views/Directory.vue'
-import { ComparisonType, HistoryElement, appState } from './store'
+import { ComparisonType, FilenameFilter, HistoryElement, appState } from './store'
 import { getCommonPathLength } from './pathutil'
 import { Equivalent } from './components/EquivalentsSettings.vue'
 
@@ -163,6 +163,28 @@ function updateHistory(newElement: HistoryElement) {
     state.value.history.shift()
   }
 }
+
+const newFieldKey = ref('')
+const newField = ref({
+  pattern: [''],
+  enabled: true
+})
+
+function addNewField() {
+  state.value.directory.filenameFilters[newFieldKey.value] = newField.value
+  newFieldKey.value = ''
+  newField.value = {
+    pattern: [''],
+    enabled: true
+  }
+}
+
+function removePattern(key: string, filter: FilenameFilter, index: number) {
+  filter.pattern.splice(index, 1)
+  if (filter.pattern.length == 0) {
+    delete state.value.directory.filenameFilters[key]
+  }
+}
 </script>
 
 <template>
@@ -212,7 +234,13 @@ function updateHistory(newElement: HistoryElement) {
     >
       <div class="row">
         <div class="col-sm-8">
-          <BInput v-model="filter.pattern[index]" v-for="(pattern, index) in filter.pattern" />
+          <BInputGroup v-for="(pattern, index) in filter.pattern">
+            <BInput v-model="filter.pattern[index]" />
+            <template #append>
+              <BButton size="sm" @click="removePattern(key, filter, index)"><IBiDash /></BButton>
+            </template>
+          </BInputGroup>
+          <BButton @click="filter.pattern.push('')"><IBiPlus /></BButton>
         </div>
         <div class="col-sm-4">
           <BFormCheckbox v-model="filter.enabled">Enabled</BFormCheckbox>
@@ -220,14 +248,15 @@ function updateHistory(newElement: HistoryElement) {
       </div>
     </BFormGroup>
     <BRow>
-      <BCol sm="3"><BInput /></BCol>
+      <BCol sm="3"><BInput v-model="newFieldKey" /></BCol>
       <BCol sm="9">
         <div class="row">
           <div class="col-sm-8">
-            <BInput />
+            <BInput v-model="newField.pattern[0]" />
+            <BButton @click="addNewField()"><IBiPlus /></BButton>
           </div>
           <div class="col-sm-4">
-            <BFormCheckbox>Enabled</BFormCheckbox>
+            <BFormCheckbox v-model="newField.enabled">Enabled</BFormCheckbox>
           </div>
         </div>
       </BCol>

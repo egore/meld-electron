@@ -10,6 +10,20 @@ export type HistoryElement = {
 
 export type ComparisonType = 'directory' | 'file'
 
+export type FilenameFilter = {
+  pattern: string[]
+  enabled: boolean
+}
+
+export type Settings = {
+  directory: {
+    ignoreIdentical: boolean
+    filenameFilters: Record<string, FilenameFilter>
+  }
+  history: HistoryElement[]
+  fontSize: string
+}
+
 export const appState = createGlobalState(() => {
   return useStorage(
     'state',
@@ -66,7 +80,7 @@ export const appState = createGlobalState(() => {
       },
       history: [] as HistoryElement[],
       fontSize: '16px'
-    },
+    } as Settings,
     localStorage,
     { mergeDefaults: true }
   )
