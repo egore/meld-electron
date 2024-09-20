@@ -7,22 +7,33 @@ import Directory from './views/Directory.vue'
 import { ComparisonType, FilenameFilter, HistoryElement, appState } from './store'
 import { getCommonPathLength } from './pathutil'
 import { Equivalent } from './components/EquivalentsSettings.vue'
+import { format } from 'date-fns'
 
 // Tab definition for files and directories
 type Tab = {
   type: ComparisonType | 'home'
   name: string
+  title?: string
   left?: string
   right?: string
   mtime?: number
   equivalents: Equivalent[]
 }
 
+const buildTimestamp = ref(new Date(BUILD_TIMESTAMP))
+const appVersion = ref(APP_VERSION)
+
 // Start with the home tab open by default
 const activeTab = ref(0)
 
 // List of tabs shown by the app
-const tabs = ref([{ type: 'home', name: 'Home' }] as Tab[])
+const tabs = ref([
+  {
+    type: 'home',
+    name: 'Home',
+    title: appVersion.value + ' (' + format(buildTimestamp.value, 'Ppp') + ')'
+  }
+] as Tab[])
 
 // Add file watcher if a file was given
 function addWatcher(filePath?: string): void {
@@ -193,6 +204,7 @@ function removePattern(key: string, filter: FilenameFilter, index: number) {
       <BNavItem
         v-for="(element, index) of tabs"
         :active="activeTab === index"
+        :title="element.title"
         @click="switchTab(index)"
         @click.middle="closeTab(index)"
       >

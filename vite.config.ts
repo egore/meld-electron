@@ -83,6 +83,10 @@ export default defineConfig(({ command }) => {
           port: +url.port
         }
       })(),
-    clearScreen: false
+    clearScreen: false,
+    define: {
+      APP_VERSION: JSON.stringify(process.env.npm_package_version),
+      BUILD_TIMESTAMP: '"' + new Date().toISOString() + '"'
+    }
   }
 })
