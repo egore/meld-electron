@@ -238,6 +238,9 @@ function removePattern(key: string, filter: FilenameFilter, index: number) {
     </BFormGroup>
     <BRow style="font-weight: bold">Directory </BRow>
     <BFormCheckbox v-model="state.directory.ignoreIdentical"> Ignore identical files</BFormCheckbox>
+    <BFormCheckbox v-model="state.directory.enableTree">
+      Show files below directories</BFormCheckbox
+    >
     <BFormGroup
       v-for="(filter, key) of state.directory.filenameFilters"
       label-cols="3"
@@ -310,16 +313,8 @@ function removePattern(key: string, filter: FilenameFilter, index: number) {
         :left="element.left"
         :right="element.right"
         :equivalents="element.equivalents"
-        :start-file-comparison="
-          (equivalents: Equivalent[], left: string, right: string) => {
-            startFileComparison(equivalents, left, right)
-          }
-        "
-        :start-directory-comparison="
-          (equivalents: Equivalent[], left: string, right: string) => {
-            startDirectoryComparison(equivalents, left, right)
-          }
-        "
+        :start-file-comparison="startFileComparison"
+        :start-directory-comparison="startDirectoryComparison"
         :directories-selected="
           (left, right) => {
             element.left = left

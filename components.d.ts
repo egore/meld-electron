@@ -34,6 +34,7 @@ declare module 'vue' {
     IBiArrowLeftRight: typeof import('~icons/bi/arrow-left-right')['default']
     IBiArrowRight: typeof import('~icons/bi/arrow-right')['default']
     IBiArrowsCollapseVertical: typeof import('~icons/bi/arrows-collapse-vertical')['default']
+    IBiCaretRightFill: typeof import('~icons/bi/caret-right-fill')['default']
     IBiDash: typeof import('~icons/bi/dash')['default']
     IBiFileEarmark: typeof import('~icons/bi/file-earmark')['default']
     IBiFileEarmarkPlus: typeof import('~icons/bi/file-earmark-plus')['default']

@@ -1,17 +1,26 @@
 <script lang="ts" setup>
+import { computed } from 'vue'
 import { format } from 'date-fns'
+import { Equivalent } from './EquivalentsSettings.vue'
+import { appState } from '../store'
+import { ComparisonStarterFunction } from '../types'
 
 const props = defineProps<{
   position: 'left' | 'right'
   pair: { left: FileInfo; right: FileInfo }
   dirs: { left: string; right: string }
-  startFileComparison: (left: string, right: string) => Promise<void>
-  startDirectoryComparison: (left: string, right: string) => Promise<void>
+  equivalents: Equivalent[]
+  startFileComparison: ComparisonStarterFunction
+  startDirectoryComparison: ComparisonStarterFunction
   reload: () => Promise<void>
   copyFile: (left: string, right: string) => Promise<void>
   deleteDirectory: (dirPath: string) => Promise<void>
   deleteFile: (filePath: string) => Promise<void>
 }>()
+
+const otherPosition = props.position === 'left' ? 'right' : 'left'
+
+const state = appState()
 
 function join(...elements: string[]): string {
   return elements.map((element, index) => `${index === 0 ? '' : '/'}${element}`).join('')
@@ -38,7 +47,9 @@ function getStyle(fileA: FileInfo, fileB: FileInfo, origin: 'left' | 'right') {
   return {}
 }
 
-const otherPosition = props.position === 'left' ? 'right' : 'left'
+const enableTree = computed(() => {
+  return state.value.directory.enableTree
+})
 </script>
 
 <template>
@@ -46,14 +57,34 @@ const otherPosition = props.position === 'left' ? 'right' : 'left'
     class="row flex-row flex-nowrap"
     :style="getStyle(pair[position], pair[otherPosition], position)"
   >
-    <span class="col-sm-1 oneline" style="width: 36px">
+    <span class="col-sm-1 oneline" style="width: 36px; padding-left: 1px">
+      <a
+        v-if="
+          enableTree &&
+          pair.left.numChildren &&
+          pair.left.type === 'directory' &&
+          pair.right.type === 'directory'
+        "
+        data-bs-toggle="collapse"
+        aria-expanded="false"
+        :href="`#collapse${pair.left.name}`"
+        :aria-controls="`collapse${pair.left.name}`"
+        style="color: inherit"
+      >
+        <IBiCaretRightFill />
+      </a>
+      <div v-else style="width: 16px; height: 10px; display: inline-block"></div>
       <IBiFileEarmark v-if="pair[position].type === 'file'" />
       <IBiFolderFill v-if="pair[position].type === 'directory'" />
     </span>
     <span class="col-sm-6 p-0 oneline">
       <span
         @dblclick="
-          startFileComparison(join(dirs.left, pair.left.name), join(dirs.right, pair.right.name))
+          startFileComparison(
+            equivalents,
+            join(dirs.left, pair.left.name),
+            join(dirs.right, pair.right.name)
+          )
         "
         style="cursor: pointer"
         v-if="pair.left.type === 'file' && pair.right.type === 'file'"
@@ -69,6 +100,7 @@ const otherPosition = props.position === 'left' ? 'right' : 'left'
             class="ml-2"
             @click="
               startFileComparison(
+                equivalents,
                 join(dirs.left, pair.left.name),
                 join(dirs.right, pair.right.name)
               )
@@ -80,6 +112,7 @@ const otherPosition = props.position === 'left' ? 'right' : 'left'
       <span
         @dblclick="
           startDirectoryComparison(
+            equivalents,
             join(dirs.left, pair.left.name),
             join(dirs.right, pair.right.name)
           )
@@ -98,6 +131,7 @@ const otherPosition = props.position === 'left' ? 'right' : 'left'
             class="ml-2"
             @click="
               startDirectoryComparison(
+                equivalents,
                 join(dirs.left, pair.left.name),
                 join(dirs.right, pair.right.name)
               )

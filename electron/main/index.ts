@@ -38,6 +38,7 @@ export class FileInfo {
   sha1sum: string
   type: 'file' | 'directory' | 'dummy'
   dateModified: Date
+  numChildren?: number
 }
 
 const require = createRequire(import.meta.url)
@@ -164,12 +165,18 @@ ipcMain.handle('listDirectory', async (event, dirPath: string) => {
       hash.update(readFileSync(filePath))
       sha1sum = hash.digest('hex')
     }
+    let numChildren = undefined
+    if (type === 'directory') {
+      numChildren = readdirSync(filePath).length
+    }
+
     files.push({
       name: file,
       size: stats.size,
       sha1sum: sha1sum,
       type: type,
-      dateModified: stats.mtime
+      dateModified: stats.mtime,
+      numChildren: numChildren
     })
   }
   return files

@@ -1,6 +1,8 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { Equivalent } from './EquivalentsSettings.vue'
+import { appState } from '../store'
+import { ComparisonStarterFunction } from '../types'
 
 function join(...elements: string[]): string {
   return elements.map((element, index) => `${index === 0 ? '' : '/'}${element}`).join('')
@@ -12,14 +14,16 @@ const props = defineProps<{
   skipIdentical: boolean
   ignorePatterns?: RegExp[]
   equivalents: Equivalent[]
-  startFileComparison: (equivalents: Equivalent[], left: string, right: string) => void
-  startDirectoryComparison: (equivalents: Equivalent[], left: string, right: string) => void
+  startFileComparison: ComparisonStarterFunction
+  startDirectoryComparison: ComparisonStarterFunction
 }>()
 
 const filesLeft = ref([] as FileInfo[])
 const filesRight = ref([] as FileInfo[])
 
 const pairs = ref([] as { left: FileInfo; right: FileInfo }[])
+
+const state = appState()
 
 function isSkipped(file: FileInfo) {
   let skip = false
@@ -118,6 +122,18 @@ async function deleteDirectory(filePath: string) {
   init()
 }
 
+const equivalentsKey = computed(() => {
+  let len = 0
+  for (const e of props.equivalents) {
+    len += e.left.length + e.right.length
+  }
+  return len
+})
+
+const enableTree = computed(() => {
+  return state.value.directory.enableTree
+})
+
 init()
 </script>
 
@@ -128,8 +144,9 @@ init()
         position="left"
         :pair="pair"
         :dirs="{ left: left, right: right }"
-        :start-file-comparison="(left: string, right: string) => startFileComparison(equivalents, left, right)"
-        :start-directory-comparison="(left: string, right: string) => startDirectoryComparison(equivalents, left, right)"
+        :equivalents="equivalents"
+        :start-file-comparison="startFileComparison"
+        :start-directory-comparison="startDirectoryComparison"
         :delete-directory="deleteDirectory"
         :reload="init"
         :delete-file="deleteFile"
@@ -171,12 +188,37 @@ init()
         position="right"
         :pair="pair"
         :dirs="{ left: left, right: right }"
+        :equivalents="equivalents"
         :start-file-comparison="startFileComparison"
         :start-directory-comparison="startDirectoryComparison"
         :delete-directory="deleteDirectory"
         :reload="init"
         :delete-file="deleteFile"
         :copy-file="copyFile"
+      />
+    </div>
+    <div
+      v-if="
+        enableTree &&
+        !isSkipped(pair.left) &&
+        !isSkipped(pair.right) &&
+        pair.left.numChildren &&
+        pair.left.type === 'directory' &&
+        pair.right.type === 'directory'
+      "
+      class="collapse"
+      :id="`collapse${pair.left.name}`"
+    >
+      <DirectoryListing
+        :start-file-comparison="startFileComparison"
+        :start-directory-comparison="startDirectoryComparison"
+        :skip-identical="skipIdentical"
+        v-if="pair.left.name && pair.right.name"
+        :left="join(left, pair.left.name)"
+        :right="join(right, pair.right.name)"
+        :key="pair.left.name + pair.right.name + skipIdentical + equivalentsKey"
+        :ignore-patterns="ignorePatterns"
+        :equivalents="equivalents"
       />
     </div>
   </div>

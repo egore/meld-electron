@@ -18,6 +18,7 @@ export type FilenameFilter = {
 export type Settings = {
   directory: {
     ignoreIdentical: boolean
+    enableTree: boolean
     filenameFilters: Record<string, FilenameFilter>
   }
   history: HistoryElement[]
@@ -30,6 +31,7 @@ export const appState = createGlobalState(() => {
     {
       directory: {
         ignoreIdentical: true,
+        enableTree: false,
         filenameFilters: {
           Backups: {
             pattern: ['#*#', '.#*', '~*', '*~', '*.{orig,bak,swp}'],

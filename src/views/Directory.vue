@@ -3,14 +3,15 @@ import { computed, ref, Ref } from 'vue'
 import DirectoryListing from '../components/DirectoryListing.vue'
 import { appState } from '../store'
 import EquivalentsSettings, { Equivalent } from '../components/EquivalentsSettings.vue'
+import { ComparisonStarterFunction } from '../types'
 
 const props = defineProps<{
   left?: string
   right?: string
   equivalents: Equivalent[]
   directoriesSelected: (left: string, right: string) => void
-  startFileComparison: (equivalents: Equivalent[], left: string, right: string) => void
-  startDirectoryComparison: (equivalents: Equivalent[], left: string, right: string) => void
+  startFileComparison: ComparisonStarterFunction
+  startDirectoryComparison: ComparisonStarterFunction
 }>()
 
 const leftDirectory = ref(props.left || '')
@@ -98,16 +99,8 @@ const equivalentsKey = computed(() => {
     </div>
   </div>
   <DirectoryListing
-    :start-file-comparison="
-      (equivalents, left, right) => {
-        startFileComparison(equivalents, left, right)
-      }
-    "
-    :start-directory-comparison="
-      (equivalents, left, right) => {
-        startDirectoryComparison(equivalents, left, right)
-      }
-    "
+    :start-file-comparison="startFileComparison"
+    :start-directory-comparison="startDirectoryComparison"
     :skip-identical="state.directory.ignoreIdentical"
     v-if="leftDirectory && rightDirectory"
     :left="leftDirectory"

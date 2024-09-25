@@ -2,21 +2,11 @@
 import { computed } from 'vue'
 import { HistoryElement, appState } from '../store'
 import { getCommonPathLength } from '../pathutil'
-import { Equivalent } from '../components/EquivalentsSettings.vue'
+import { ComparisonStarterFunction } from '../types'
 
 defineProps<{
-  startFileComparison: (
-    equivalents: Equivalent[],
-    left?: string,
-    right?: string,
-    addToHistory?: boolean
-  ) => void
-  startDirectoryComparison: (
-    equivalents: Equivalent[],
-    left?: string,
-    right?: string,
-    addToHistory?: boolean
-  ) => void
+  startFileComparison: ComparisonStarterFunction
+  startDirectoryComparison: ComparisonStarterFunction
 }>()
 
 const state = appState()

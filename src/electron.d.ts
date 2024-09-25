@@ -6,4 +6,5 @@ class FileInfo {
   sha1sum: string
   type: ComparisonType | 'dummy'
   dateModified: Date
+  numChildren?: number
 }
