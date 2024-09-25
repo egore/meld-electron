@@ -16,6 +16,7 @@ const props = defineProps<{
   equivalents: Equivalent[]
   startFileComparison: ComparisonStarterFunction
   startDirectoryComparison: ComparisonStarterFunction
+  level?: number
 }>()
 
 const filesLeft = ref([] as FileInfo[])
@@ -134,12 +135,20 @@ const enableTree = computed(() => {
   return state.value.directory.enableTree
 })
 
+const currentLevel = computed(() => {
+  return props.level ? props.level : 0
+})
+
 init()
 </script>
 
 <template>
   <div class="row" v-for="pair in pairs">
-    <div class="col-sm-6" style="width: calc(50% - 20px)">
+    <div
+      class="col-sm-6"
+      style="width: calc(50% - 20px)"
+      :style="{ 'padding-left': currentLevel * 12 + 10 + 'px' }"
+    >
       <DirectoryListingLine
         position="left"
         :pair="pair"
@@ -183,7 +192,11 @@ init()
         <IBiArrowRight />
       </span>
     </div>
-    <div class="col-sm-6" style="width: calc(50% - 20px)">
+    <div
+      class="col-sm-6"
+      style="width: calc(50% - 20px)"
+      :style="{ 'padding-left': currentLevel * 12 + 10 + 'px' }"
+    >
       <DirectoryListingLine
         position="right"
         :pair="pair"
@@ -210,6 +223,7 @@ init()
       :id="`collapse${pair.left.name}`"
     >
       <DirectoryListing
+        :level="currentLevel + 1"
         :start-file-comparison="startFileComparison"
         :start-directory-comparison="startDirectoryComparison"
         :skip-identical="skipIdentical"
